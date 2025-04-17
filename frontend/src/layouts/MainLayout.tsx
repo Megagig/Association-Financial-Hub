@@ -1,7 +1,12 @@
+import Footer from '../components/Footer';
+import Header from '../components/Header';
+import Hero from '../components/Hero';
+
 interface Props {
   children: React.ReactNode;
 }
 
+// This layout component provides a basic structure for the application with a header, footer, and a main content area.
 const MainLayout = ({ children }: Props) => {
   return (
     <div className="flex flex-col min-h-screen">
@@ -13,4 +18,3 @@ const MainLayout = ({ children }: Props) => {
   );
 };
 export default MainLayout;
-// This layout component provides a basic structure for the application with a header, footer, and a main content area.
