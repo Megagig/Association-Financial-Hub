@@ -1,14 +1,13 @@
 {
-  "name": "backend",
+  "name": "association-financial-hub",
   "version": "1.0.0",
+  "description": "An online portal for clubs, and alumni or association to track members financial status",
   "main": "./src/index.ts",
   "scripts": {
     "dev": "nodemon"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "author": "Obi Anthony Uchenna",
+  "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
