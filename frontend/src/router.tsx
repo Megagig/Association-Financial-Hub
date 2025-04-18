@@ -22,6 +22,7 @@ import MemberReportsPage from './pages/member/MemberReportsPage';
 import MemberAccountSettingsPage from './pages/member/MemberAccountSettingsPage';
 import MemberHelpSupportPage from './pages/member/MemberHelpSupportPage';
 import { useAuth } from './context/AuthContext';
+import Register from './pages/public/Register';
 
 const PrivateRoute: React.FC<{
   element: React.ReactNode;
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <HomePage />,
+      },
+      {
+        path: 'register',
+        element: <Register />,
       },
       {
         path: 'sign-in',

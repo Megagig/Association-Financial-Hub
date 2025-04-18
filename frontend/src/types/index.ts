@@ -1,13 +1,30 @@
 export enum UserRole {
-  ADMIN = 'admin',
-  MEMBER = 'member',
+  USER = 'USER',
+  ADMIN = 'ADMIN',
 }
 
-// Define Toast Message Type
-export type ToastMessage = {
+// Define form data type
+export type RegisterFormData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
+
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+}
+
+// Define Toast Message interface
+export interface ToastMessage {
   message: string;
   type: 'success' | 'error';
-};
+}
 
 export interface User {
   id: string;

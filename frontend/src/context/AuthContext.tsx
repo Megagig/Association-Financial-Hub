@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, UserRole } from '../types';
+import { User, UserRole, ToastMessage } from '../types';
 
 interface AuthContextType {
   user: User | null;
@@ -8,6 +8,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAdmin: boolean;
+  showToast: (message: ToastMessage) => void;
 }
 
 interface LoginResponse {
@@ -15,7 +16,8 @@ interface LoginResponse {
   token: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.example.com';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'https://api.example.com';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -24,6 +26,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [toast, setToast] = useState<ToastMessage | null>(null);
+
+  // Add showToast function
+  const showToast = (message: ToastMessage) => {
+    setToast(message);
+    // Auto-hide toast after 3 seconds
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
 
   // Function to get the auth token from localStorage
   const getAuthToken = (): string | null => {
@@ -31,7 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // Function to fetch the current user data with the token
-  const fetchCurrentUser = async (): Promise<User | null> => {
+  const fetchCurrentUser = React.useCallback(async (): Promise<User | null> => {
     const token = getAuthToken();
 
     if (!token) {
@@ -39,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     try {
-      const response = await fetch(`${API_URL}/auth/me`, {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -61,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       console.error('Error fetching current user:', error);
       return null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -77,12 +89,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     initializeAuth();
-  }, []);
+  }, [fetchCurrentUser]);
 
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (token) {
         // Optional: notify the backend about the logout
-        await fetch(`${API_URL}/auth/logout`, {
+        await fetch(`${API_BASE_URL}/auth/logout`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -140,9 +152,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     login,
     logout,
     isAdmin: user?.role === UserRole.ADMIN,
+    showToast,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {/* Add Toast component */}
+      {toast && (
+        <div
+          className={`fixed bottom-4 right-4 px-4 py-2 rounded-md text-white ${
+            toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
