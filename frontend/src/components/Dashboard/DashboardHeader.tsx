@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/';
 import { useAuth } from '../../context/AuthContext';
 import { Bell, LogOut } from 'lucide-react';
 import { Button } from '../ui/button';
