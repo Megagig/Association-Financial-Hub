@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const fetchCurrentUser = React.useCallback(async (): Promise<User | null> => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/validate-token`, {
-        credentials: 'include', // Important for sending cookies
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -46,8 +46,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error('Failed to fetch user data');
       }
 
-      const userData = await response.json();
-      return userData.user;
+      const data = await response.json();
+      return data.user; // Return the user object directly
     } catch (error) {
       console.error('Error fetching current user:', error);
       return null;
@@ -59,7 +59,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsLoading(true);
       try {
         const currentUser = await fetchCurrentUser();
-        setUser(currentUser);
+        if (currentUser) {
+          setUser(currentUser);
+        }
       } catch (error) {
         console.error('Authentication initialization error:', error);
       } finally {
