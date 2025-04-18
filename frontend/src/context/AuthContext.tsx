@@ -11,11 +11,6 @@ interface AuthContextType {
   showToast: (message: ToastMessage) => void;
 }
 
-interface LoginResponse {
-  user: User;
-  token: string;
-}
-
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'https://api.example.com';
 
@@ -37,31 +32,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }, 3000);
   };
 
-  // Function to get the auth token from localStorage
-  const getAuthToken = (): string | null => {
-    return localStorage.getItem('authToken');
-  };
-
-  // Function to fetch the current user data with the token
+  // Function to fetch the current user data using cookies
   const fetchCurrentUser = React.useCallback(async (): Promise<User | null> => {
-    const token = getAuthToken();
-
-    if (!token) {
-      return null;
-    }
-
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users/register`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+      const response = await fetch(`${API_BASE_URL}/api/auth/validate-token`, {
+        credentials: 'include', // Important for sending cookies
       });
 
       if (!response.ok) {
         if (response.status === 401) {
-          // Token expired or invalid
-          localStorage.removeItem('authToken');
           return null;
         }
         throw new Error('Failed to fetch user data');
@@ -94,25 +73,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
+        credentials: 'include', // Important for receiving cookies
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Authentication failed');
+        throw new Error(data.message || 'Authentication failed');
       }
 
-      const data: LoginResponse = await response.json();
+      if (!data.user) {
+        throw new Error('No user data received');
+      }
 
-      // Store the auth token
-      localStorage.setItem('authToken', data.token);
-
-      // Set the user in state
       setUser(data.user);
     } catch (error) {
       console.error('Login error:', error);
@@ -121,26 +100,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsLoading(false);
     }
   };
-
   const logout = async (): Promise<void> => {
     try {
-      const token = getAuthToken();
-
-      if (token) {
-        // Optional: notify the backend about the logout
-        await fetch(`${API_BASE_URL}/auth/logout`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-      }
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include', // Important for sending cookies
+      });
     } catch (error) {
       console.error('Logout API error:', error);
     } finally {
-      // Always clear local state even if API call fails
-      localStorage.removeItem('authToken');
       setUser(null);
     }
   };
