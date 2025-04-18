@@ -18,7 +18,7 @@ interface SidebarProps {
   className?: string;
 }
 
-export function Sidebar({ className }: SidebarProps) {
+export function DashboardSidebar({ className }: SidebarProps) {
   const { isAdmin } = useAuth();
   const location = useLocation();
 
