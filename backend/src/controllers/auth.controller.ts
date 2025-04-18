@@ -52,9 +52,13 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     });
 
     // Remove password from user object before sending
-    const userWithoutPassword = existingUser.toObject();
-    delete (userWithoutPassword as { password?: string }).password;
-
+    const userWithoutPassword = {
+      _id: existingUser._id,
+      email: existingUser.email,
+      firstName: existingUser.firstName,
+      lastName: existingUser.lastName,
+      role: existingUser.role,
+    };
     // Return response with user ID
     res
       .status(200)

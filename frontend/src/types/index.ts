@@ -1,8 +1,7 @@
 export enum UserRole {
-  USER = 'USER',
   ADMIN = 'ADMIN',
+  USER = 'USER',
 }
-
 // Define form data type
 export type RegisterFormData = {
   firstName: string;
