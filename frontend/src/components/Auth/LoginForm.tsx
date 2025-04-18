@@ -18,7 +18,7 @@ export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login, showToast } = useAuth(); // Add showToast from context
+  const { login, showToast } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,12 +26,19 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      const redirectPath = await login(email, password);
       showToast({
         message: 'Login successful!',
         type: 'success',
       });
-      navigate('/dashboard'); // Redirect to dashboard or home page
+
+      // Add console log to debug the redirect path
+      console.log('About to navigate to:', redirectPath);
+
+      // Ensure navigation happens with a slight delay to let state updates complete
+      setTimeout(() => {
+        navigate(redirectPath);
+      }, 100);
     } catch (error) {
       showToast({
         message: error instanceof Error ? error.message : 'Login failed',

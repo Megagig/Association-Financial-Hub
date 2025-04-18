@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   CreditCard,
   CircleDollarSign,
-  FileText,
   Settings,
   BadgeHelp,
   User,
@@ -16,9 +15,10 @@ import {
 
 interface SidebarProps {
   className?: string;
+  onNavigate?: () => void; // Optional callback for mobile to close sidebar on navigation
 }
 
-export function DashboardSidebar({ className }: SidebarProps) {
+export function DashboardSidebar({ className, onNavigate }: SidebarProps) {
   const { isAdmin } = useAuth();
   const location = useLocation();
 
@@ -26,8 +26,17 @@ export function DashboardSidebar({ className }: SidebarProps) {
     return location.pathname === path;
   };
 
+  // Helper to handle navigation and potential sidebar closing
+  const handleNavClick = () => {
+    if (onNavigate) {
+      onNavigate();
+    }
+  };
+
   return (
-    <div className={cn('pb-12 border-r bg-card h-screen', className)}>
+    <div
+      className={cn('pb-12 border-r bg-card h-full overflow-y-auto', className)}
+    >
       <div className="space-y-4 py-4">
         <div className="px-4 py-2">
           <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
@@ -36,6 +45,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
           <div className="space-y-1">
             <Link
               to="/"
+              onClick={handleNavClick}
               className={cn(
                 'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
                 isActive('/')
@@ -51,6 +61,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
               <>
                 <Link
                   to="/members"
+                  onClick={handleNavClick}
                   className={cn(
                     'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
                     isActive('/members')
@@ -63,6 +74,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
                 </Link>
                 <Link
                   to="/payments"
+                  onClick={handleNavClick}
                   className={cn(
                     'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
                     isActive('/payments')
@@ -75,6 +87,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
                 </Link>
                 <Link
                   to="/loans"
+                  onClick={handleNavClick}
                   className={cn(
                     'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
                     isActive('/loans')
@@ -87,6 +100,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
                 </Link>
                 <Link
                   to="/reports"
+                  onClick={handleNavClick}
                   className={cn(
                     'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
                     isActive('/reports')
@@ -102,6 +116,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
               <>
                 <Link
                   to="/profile"
+                  onClick={handleNavClick}
                   className={cn(
                     'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
                     isActive('/profile')
@@ -114,6 +129,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
                 </Link>
                 <Link
                   to="/my-payments"
+                  onClick={handleNavClick}
                   className={cn(
                     'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
                     isActive('/my-payments')
@@ -126,6 +142,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
                 </Link>
                 <Link
                   to="/my-loans"
+                  onClick={handleNavClick}
                   className={cn(
                     'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
                     isActive('/my-loans')
@@ -138,6 +155,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
                 </Link>
                 <Link
                   to="/reports"
+                  onClick={handleNavClick}
                   className={cn(
                     'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
                     isActive('/reports')
@@ -160,6 +178,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
           <div className="space-y-1">
             <Link
               to="/settings"
+              onClick={handleNavClick}
               className={cn(
                 'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
                 isActive('/settings')
@@ -172,6 +191,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
             </Link>
             <Link
               to="/help"
+              onClick={handleNavClick}
               className={cn(
                 'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
                 isActive('/help')

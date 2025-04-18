@@ -23,19 +23,37 @@ import MemberAccountSettingsPage from './pages/member/MemberAccountSettingsPage'
 import MemberHelpSupportPage from './pages/member/MemberHelpSupportPage';
 import { useAuth } from './context/AuthContext';
 import Register from './pages/public/Register';
+// import { UserRole } from './types';
 
 const PrivateRoute: React.FC<{
   element: React.ReactNode;
   allowedRoles?: ('ADMIN' | 'USER')[];
 }> = ({ element, allowedRoles }) => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div>Loading...</div>; // You can replace this with a loading spinner or skeleton
+  }
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
+  if (allowedRoles && user.role) {
+    // Case-insensitive role check
+    const userRoleUpperCase = user.role.toUpperCase();
+    const hasAllowedRole = allowedRoles.some(
+      (role) => role === userRoleUpperCase
+    );
+
+    if (!hasAllowedRole) {
+      return (
+        <Navigate
+          to={userRoleUpperCase === 'ADMIN' ? '/admin' : '/member'}
+          replace
+        />
+      );
+    }
   }
 
   return <>{element}</>;
