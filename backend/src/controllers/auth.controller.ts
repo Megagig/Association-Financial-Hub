@@ -47,13 +47,18 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     res.cookie('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
       maxAge: 86400000, // 1 day in milliseconds
     });
+
+    // Remove password from user object before sending
+    const userWithoutPassword = existingUser.toObject();
+    delete (userWithoutPassword as { password?: string }).password;
 
     // Return response with user ID
     res
       .status(200)
-      .json({ message: 'Login Successfully', userId: existingUser._id });
+      .json({ message: 'Login Successfully', user: userWithoutPassword });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Something went wrong' });

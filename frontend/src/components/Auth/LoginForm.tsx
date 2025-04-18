@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { useNavigate } from 'react-router-dom';
 
 import {
   Card,
@@ -18,6 +19,7 @@ export function LoginForm() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login, showToast } = useAuth(); // Add showToast from context
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +31,7 @@ export function LoginForm() {
         message: 'Login successful!',
         type: 'success',
       });
+      navigate('/dashboard'); // Redirect to dashboard or home page
     } catch (error) {
       showToast({
         message: error instanceof Error ? error.message : 'Login failed',
