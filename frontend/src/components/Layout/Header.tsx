@@ -9,7 +9,7 @@ const Header = () => {
             </a>
           </div>
           <div className="flex items-center space-x-4">
-            <a href="/sign-in" className="text-white hover:text-gray-200">
+            <a href="/login" className="text-white hover:text-gray-200">
               Sign In
             </a>
             <a
