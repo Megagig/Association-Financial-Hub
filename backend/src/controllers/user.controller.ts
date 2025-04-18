@@ -1,9 +1,19 @@
 import { Request, Response } from 'express';
 import User from '../models/user.model';
 import jwt from 'jsonwebtoken';
+import { validationResult } from 'express-validator';
 
 //Register a new user
 export async function registerUser(req: Request, res: Response) {
+  // 1️⃣ Get validation errors from the request
+  const errors = validationResult(req);
+
+  // 2️⃣ If there are validation errors, return them to client
+  if (!errors.isEmpty()) {
+    res.status(400).json({
+      message: errors.array(),
+    });
+  }
   try {
     // Get the user data from the request body
     const { email, password, firstName, lastName } = req.body;
