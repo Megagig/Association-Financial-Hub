@@ -1,13 +1,17 @@
-function App() {
+import { AuthProvider } from './context/AuthContext';
+import Router from './router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
+
+const App = () => {
   return (
-    <>
-      <div>
-        <h1 className="text-3xl font-bold underline bg-red-800">
-          Hello world!
-        </h1>
-      </div>
-    </>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Router />
+      </AuthProvider>
+    </QueryClientProvider>
   );
-}
+};
 
 export default App;
