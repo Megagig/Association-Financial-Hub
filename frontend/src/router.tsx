@@ -21,6 +21,7 @@ import MemberLoansPage from './pages/member/MemberLoansPage';
 import MemberReportsPage from './pages/member/MemberReportsPage';
 import MemberAccountSettingsPage from './pages/member/MemberAccountSettingsPage';
 import MemberHelpSupportPage from './pages/member/MemberHelpSupportPage';
+import { useAuth } from './context/AuthContext';
 
 const PrivateRoute: React.FC<{
   element: React.ReactNode;

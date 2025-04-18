@@ -1,13 +1,11 @@
-function App() {
+import Router from './router';
+
+const App = () => {
   return (
     <>
-      <div>
-        <h1 className="text-3xl font-bold underline bg-red-800">
-          Hello world!
-        </h1>
-      </div>
+      <Router />
     </>
   );
-}
+};
 
 export default App;
