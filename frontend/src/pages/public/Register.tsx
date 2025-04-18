@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { RegisterFormData } from '../../types';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const Register = () => {
   const navigate = useNavigate();
   const { showToast } = useAuth();
@@ -18,8 +20,9 @@ const Register = () => {
   // Use mutation for registration
   const mutation = useMutation({
     mutationFn: async (data: RegisterFormData) => {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(`${API_BASE_URL}/api/users/register`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },

@@ -26,12 +26,12 @@ import Register from './pages/public/Register';
 
 const PrivateRoute: React.FC<{
   element: React.ReactNode;
-  allowedRoles?: ('admin' | 'member')[];
+  allowedRoles?: ('ADMIN' | 'USER')[];
 }> = ({ element, allowedRoles }) => {
   const { user } = useAuth();
 
   if (!user) {
-    return <Navigate to="/sign-in" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
@@ -55,13 +55,13 @@ const router = createBrowserRouter([
         element: <Register />,
       },
       {
-        path: 'sign-in',
+        path: 'login',
         element: <SignInPage />,
       },
       {
         path: 'admin',
         element: (
-          <PrivateRoute allowedRoles={['admin']} element={<AdminLayout />} />
+          <PrivateRoute allowedRoles={['ADMIN']} element={<AdminLayout />} />
         ),
         children: [
           {
@@ -93,7 +93,7 @@ const router = createBrowserRouter([
       {
         path: 'member',
         element: (
-          <PrivateRoute allowedRoles={['member']} element={<MemberLayout />} />
+          <PrivateRoute allowedRoles={['USER']} element={<MemberLayout />} />
         ),
         children: [
           {
