@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
-export default function AdminDashboardPage() {
+export default function AdminDashboard() {
   const { financialSummary, members, payments, loans, isLoading } = useData();
 
   if (isLoading) {
