@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
-        credentials: 'include', // Important for receiving cookies
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -85,7 +85,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       const data = await response.json();
-      console.log('Login response:', data); // Debug the response
 
       if (!response.ok) {
         throw new Error(data.message || 'Authentication failed');
@@ -94,21 +93,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!data.user) {
         throw new Error('No user data received');
       }
-      console.log('Setting user:', data.user); // Log the user being set
 
-      setUser(data.user);
-      // Use case-insensitive comparison
-      const userRole = data.user.role.toUpperCase();
-      console.log('User role (normalized):', userRole);
+      // Transform the role to match enum
+      const userWithCorrectRole = {
+        ...data.user,
+        role: data.user.role.toLowerCase() as UserRole,
+      };
 
-      // Log the role for debugging
-      console.log('User role:', data.user.role);
-      console.log('Normalized role:', userRole);
+      setUser(userWithCorrectRole);
 
-      const redirectPath = userRole === 'ADMIN' ? '/admin' : '/member';
-      console.log('Redirect path determined:', redirectPath);
-
-      return redirectPath;
+      // Return the correct path based on role
+      return userWithCorrectRole.role === UserRole.ADMIN ? '/admin' : '/member';
     } catch (error) {
       console.error('Login error:', error);
       throw error;

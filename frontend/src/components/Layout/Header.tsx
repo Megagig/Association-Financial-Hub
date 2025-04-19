@@ -1,5 +1,6 @@
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   const { isAuthenticated, logout, showToast } = useAuth();
@@ -26,22 +27,22 @@ const Header = () => {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <a href="/" className="text-white text-xl font-bold">
+            <Link to="/" className="text-white text-xl font-bold">
               Association Hub
-            </a>
+            </Link>
           </div>
           <div className="flex items-center space-x-4">
             {!isAuthenticated ? (
               <>
-                <a href="/login" className="text-white hover:text-gray-200">
+                <Link to="/login" className="text-white hover:text-gray-200">
                   Sign In
-                </a>
-                <a
-                  href="/register"
+                </Link>
+                <Link
+                  to="/register"
                   className="bg-white text-purple-600 px-4 py-2 rounded-md hover:bg-gray-100"
                 >
                   Register
-                </a>
+                </Link>
               </>
             ) : (
               <button

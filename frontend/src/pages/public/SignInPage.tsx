@@ -2,16 +2,19 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoginForm } from '../../components/Auth/LoginForm';
 import { useAuth } from '../../context/AuthContext';
+import { UserRole } from '../../types';
 
 export default function SignInPage() {
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/');
+    if (isAuthenticated && user) {
+      // Redirect based on user role
+      const redirectPath = user.role === UserRole.ADMIN ? '/admin' : '/member';
+      navigate(redirectPath, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4">
