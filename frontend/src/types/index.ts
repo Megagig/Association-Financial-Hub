@@ -1,6 +1,6 @@
 export enum UserRole {
-  ADMIN = 'ADMIN',
-  USER = 'USER',
+  ADMIN = 'admin', // Match backend casing
+  USER = 'user', // Match backend casing
 }
 // Define form data type
 export type RegisterFormData = {
@@ -12,29 +12,43 @@ export type RegisterFormData = {
 };
 
 export interface User {
-  id: string;
+  _id: string; // Match backend field name
   email: string;
   firstName: string;
   lastName: string;
   role: UserRole;
+  avatar?: string;
 }
 
-// Define Toast Message interface
+// // Define Toast Message interface
+// export interface ToastMessage {
+//   message: string;
+//   type: 'success' | 'error';
+// }
+
+// export interface User {
+//   id: string;
+//   name: string;
+//   email: string;
+//   role: UserRole;
+//   avatar?: string;
+//   memberSince: string;
+//   membershipId: string;
+// }
+
+// Remove duplicate User interface
 export interface ToastMessage {
   message: string;
   type: 'success' | 'error';
 }
 
-export interface User {
-  id: string;
-  name: string;
+export type RegisterFormData = {
+  firstName: string;
+  lastName: string;
   email: string;
-  role: UserRole;
-  avatar?: string;
-  memberSince: string;
-  membershipId: string;
-}
-
+  password: string;
+  confirmPassword: string;
+};
 export interface AuthContextType {
   showToast: (toastMessage: ToastMessage) => void;
   user: User | null;

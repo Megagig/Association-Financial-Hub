@@ -1,63 +1,26 @@
-import {
-  createBrowserRouter,
-  Navigate,
-  RouterProvider,
-} from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
+import AdminLayout from './layouts/AdminLayout';
+import MemberLayout from './layouts/MemberLayout';
+import PrivateRoute from './components/Routes/PrivateRoute';
 import HomePage from './pages/public/HomePage';
 import SignInPage from './pages/public/SignInPage';
-import AdminDashboardPage from './pages/admin/AdminDashboardPage';
-import AdminLayout from './layouts/AdminLayout';
-import AdminPaymentsPage from './pages/admin/AdminPaymentsPage';
-import AdminLoansPage from './pages/admin/AdminLoansPage';
-import AdminReportsPage from './pages/admin/AdminReportsPage';
-import AdminAccountSettingsPage from './pages/admin/AccountSettingsPage';
-import AdminHelpSupportPage from './pages/admin/AdminHelpSupportPage';
-import MemberLayout from './layouts/MemberLayout';
-import MemberDashboardPage from './pages/member/MemberDashboardPage';
-import MemberProfilePage from './pages/member/MemberProfilePage';
-import MemberPaymentsPage from './pages/member/MemberPaymentsPage';
-import MemberLoansPage from './pages/member/MemberLoansPage';
-import MemberReportsPage from './pages/member/MemberReportsPage';
-import MemberAccountSettingsPage from './pages/member/MemberAccountSettingsPage';
-import MemberHelpSupportPage from './pages/member/MemberHelpSupportPage';
-import { useAuth } from './context/AuthContext';
 import Register from './pages/public/Register';
-// import { UserRole } from './types';
+import { UserRole } from './types';
 
-const PrivateRoute: React.FC<{
-  element: React.ReactNode;
-  allowedRoles?: ('ADMIN' | 'USER')[];
-}> = ({ element, allowedRoles }) => {
-  const { user, isLoading } = useAuth();
+// Import admin pages
+import AdminDashboard from './pages/admin/AdminDashboardPage';
+import MembersPage from './pages/admin/MembersPage';
+import PaymentsPage from './pages/admin/AdminPaymentsPage';
+import LoansPage from './pages/admin/AdminLoansPage';
+import ReportsPage from './pages/admin/AdminReportsPage';
 
-  if (isLoading) {
-    return <div>Loading...</div>; // You can replace this with a loading spinner or skeleton
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (allowedRoles && user.role) {
-    // Case-insensitive role check
-    const userRoleUpperCase = user.role.toUpperCase();
-    const hasAllowedRole = allowedRoles.some(
-      (role) => role === userRoleUpperCase
-    );
-
-    if (!hasAllowedRole) {
-      return (
-        <Navigate
-          to={userRoleUpperCase === 'ADMIN' ? '/admin' : '/member'}
-          replace
-        />
-      );
-    }
-  }
-
-  return <>{element}</>;
-};
+// Import member pages
+import MemberDashboard from './pages/member/MemberDashboardPage';
+import ProfilePage from './pages/member/MemberProfilePage';
+import MyPaymentsPage from './pages/member/MemberPaymentsPage';
+import MyLoansPage from './pages/member/MemberLoansPage';
+import MyReportsPage from './pages/member/MemberReportsPage';
 
 const router = createBrowserRouter([
   {
@@ -76,79 +39,41 @@ const router = createBrowserRouter([
         path: 'login',
         element: <SignInPage />,
       },
-      {
-        path: 'admin',
-        element: (
-          <PrivateRoute allowedRoles={['ADMIN']} element={<AdminLayout />} />
-        ),
-        children: [
-          {
-            index: true,
-            element: <AdminDashboardPage />,
-          },
-          {
-            path: 'payments',
-            element: <AdminPaymentsPage />,
-          },
-          {
-            path: 'loans',
-            element: <AdminLoansPage />,
-          },
-          {
-            path: 'reports',
-            element: <AdminReportsPage />,
-          },
-          {
-            path: 'account-settings',
-            element: <AdminAccountSettingsPage />,
-          },
-          {
-            path: 'help-support',
-            element: <AdminHelpSupportPage />,
-          },
-        ],
-      },
-      {
-        path: 'member',
-        element: (
-          <PrivateRoute allowedRoles={['USER']} element={<MemberLayout />} />
-        ),
-        children: [
-          {
-            index: true,
-            element: <MemberDashboardPage />,
-          },
-          {
-            path: 'profile',
-            element: <MemberProfilePage />,
-          },
-          {
-            path: 'payments',
-            element: <MemberPaymentsPage />,
-          },
-          {
-            path: 'loans',
-            element: <MemberLoansPage />,
-          },
-          {
-            path: 'reports',
-            element: <MemberReportsPage />,
-          },
-          {
-            path: 'account-settings',
-            element: <MemberAccountSettingsPage />,
-          },
-          {
-            path: 'help-support',
-            element: <MemberHelpSupportPage />,
-          },
-        ],
-      },
+    ],
+  },
+  {
+    path: '/admin',
+    element: (
+      <PrivateRoute allowedRoles={[UserRole.ADMIN]}>
+        <AdminLayout />
+      </PrivateRoute>
+    ),
+    children: [
+      { index: true, element: <AdminDashboard /> },
+      { path: 'members', element: <MembersPage /> },
+      { path: 'payments', element: <PaymentsPage /> },
+      { path: 'loans', element: <LoansPage /> },
+      { path: 'reports', element: <ReportsPage /> },
+    ],
+  },
+  {
+    path: '/member',
+    element: (
+      <PrivateRoute allowedRoles={[UserRole.USER]}>
+        <MemberLayout />
+      </PrivateRoute>
+    ),
+    children: [
+      { index: true, element: <MemberDashboard /> },
+      { path: 'profile', element: <ProfilePage /> },
+      { path: 'my-payments', element: <MyPaymentsPage /> },
+      { path: 'my-loans', element: <MyLoansPage /> },
+      { path: 'reports', element: <MyReportsPage /> },
     ],
   },
 ]);
 
-const Router: React.FC = () => {
+const Router = () => {
   return <RouterProvider router={router} />;
 };
 

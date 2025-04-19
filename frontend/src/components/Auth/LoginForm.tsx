@@ -32,13 +32,8 @@ export function LoginForm() {
         type: 'success',
       });
 
-      // Add console log to debug the redirect path
-      console.log('About to navigate to:', redirectPath);
-
-      // Ensure navigation happens with a slight delay to let state updates complete
-      setTimeout(() => {
-        navigate(redirectPath);
-      }, 100);
+      // Use replace instead of push to prevent back button issues
+      navigate(redirectPath, { replace: true });
     } catch (error) {
       showToast({
         message: error instanceof Error ? error.message : 'Login failed',
