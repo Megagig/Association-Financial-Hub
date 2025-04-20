@@ -5,8 +5,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+} from '../../components/ui/dialog';
+import { Button } from '../../components/ui/button';
 import { Download, Printer, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 
 interface ReceiptViewerModalProps {

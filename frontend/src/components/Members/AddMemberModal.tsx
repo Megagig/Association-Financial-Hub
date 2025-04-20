@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useData } from '@/context/DataContext';
+import { useData } from '../../context/DataContext';
 import {
   Dialog,
   DialogContent,
@@ -7,18 +7,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from '../../components/ui/dialog';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
+} from '../../components/ui/select';
+import { useToast } from '../../components/ui/use-toast';
 
 interface AddMemberModalProps {
   isOpen: boolean;

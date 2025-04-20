@@ -5,11 +5,11 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+} from '../../components/ui/dialog';
+import { Button } from '../../components/ui/button';
 import { Download, Printer } from 'lucide-react';
-import { useData } from '@/context/DataContext';
-import { useAuth } from '@/context/AuthContext';
+import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface MembershipCertificateModalProps {
   isOpen: boolean;

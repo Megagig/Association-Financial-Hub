@@ -9,36 +9,31 @@ import Register from './pages/public/Register';
 import { UserRole } from './types';
 
 // Import admin pages
-import AdminDashboard from './pages/admin/AdminDashboardPage';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import MembersPage from './pages/admin/MembersPage';
-import PaymentsPage from './pages/admin/AdminPaymentsPage';
-import LoansPage from './pages/admin/AdminLoansPage';
-import ReportsPage from './pages/admin/AdminReportsPage';
+import AdminProfilePage from './pages/admin/AdminProfilePage'; // Use this import
+import PaymentsPage from './pages/admin/PaymentsPage';
+import LoansPage from './pages/admin/LoansPage';
+import ReportsPage from './pages/admin/ReportsPage';
+import SettingsPage from './pages/admin/SettingsPage';
+import HelpSupportPage from './pages/admin/HelpSupportPage';
+import IncomeExpensesPage from './pages/admin/IncomeExpensesPage';
 
 // Import member pages
-import MemberDashboard from './pages/member/MemberDashboardPage';
-import ProfilePage from './pages/member/MemberProfilePage';
-import MyPaymentsPage from './pages/member/MemberPaymentsPage';
-import MyLoansPage from './pages/member/MemberLoansPage';
-import MyReportsPage from './pages/member/MemberReportsPage';
+import MemberDashboard from './pages/member/MemberDashboard';
+import MemberProfilePage from './pages/member/MemberProfilePage'; // Use this import
+import MyPaymentsPage from './pages/member/MyPaymentsPage';
+import MyLoansPage from './pages/member/MyLoansPage';
+import MyReportsPage from './pages/member/MyReportsPage';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <MainLayout />,
     children: [
-      {
-        index: true,
-        element: <HomePage />,
-      },
-      {
-        path: 'register',
-        element: <Register />,
-      },
-      {
-        path: 'login',
-        element: <SignInPage />,
-      },
+      { index: true, element: <HomePage /> },
+      { path: 'login', element: <SignInPage /> },
+      { path: 'register', element: <Register /> },
     ],
   },
   {
@@ -51,9 +46,13 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <AdminDashboard /> },
       { path: 'members', element: <MembersPage /> },
+      { path: 'profile', element: <AdminProfilePage /> }, // Keep only this profile route
       { path: 'payments', element: <PaymentsPage /> },
       { path: 'loans', element: <LoansPage /> },
       { path: 'reports', element: <ReportsPage /> },
+      { path: 'settings', element: <SettingsPage /> },
+      { path: 'help-support', element: <HelpSupportPage /> },
+      { path: 'income-expenses', element: <IncomeExpensesPage /> },
     ],
   },
   {
@@ -65,10 +64,12 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <MemberDashboard /> },
-      { path: 'profile', element: <ProfilePage /> },
+      { path: 'profile', element: <MemberProfilePage /> }, // Use MemberProfilePage
       { path: 'my-payments', element: <MyPaymentsPage /> },
       { path: 'my-loans', element: <MyLoansPage /> },
       { path: 'reports', element: <MyReportsPage /> },
+      { path: 'settings', element: <SettingsPage /> },
+      { path: 'help-support', element: <HelpSupportPage /> },
     ],
   },
 ]);

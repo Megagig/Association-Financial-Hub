@@ -18,7 +18,6 @@ import {
   AlertCircle,
   User,
   FileText,
-  Clock,
   BanknoteIcon,
   Receipt,
 } from 'lucide-react';
@@ -26,12 +25,22 @@ import { MembershipCertificateModal } from '@/components/Profile/MembershipCerti
 import { PaymentHistoryModal } from '@/components/Profile/PaymentHistoryModal';
 import { LoanHistoryModal } from '@/components/Profile/LoanHistoryModal';
 
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  currentWorkplace: string;
+  currentPosition: string;
+  department: string;
+  graduationYear: string;
+}
+
 export default function ProfilePage() {
   const { user } = useAuth();
   const { getMemberById, isLoading } = useData();
   const { toast } = useToast();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     phone: '',
@@ -43,8 +52,6 @@ export default function ProfilePage() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Modal states
   const [isCertificateModalOpen, setCertificateModalOpen] = useState(false);
   const [isPaymentHistoryModalOpen, setPaymentHistoryModalOpen] =
     useState(false);
@@ -90,19 +97,28 @@ export default function ProfilePage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call to update profile
-    setTimeout(() => {
+    try {
+      // Add your API call here to update the profile
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+
       toast({
         title: 'Profile Updated',
         description: 'Your profile information has been updated successfully.',
       });
       setIsEditing(false);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update profile. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -143,83 +159,23 @@ export default function ProfilePage() {
 
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="department">Department</Label>
-                  <Input
-                    id="department"
-                    name="department"
-                    value={formData.department}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="graduationYear">Graduation Year</Label>
-                  <Input
-                    id="graduationYear"
-                    name="graduationYear"
-                    value={formData.graduationYear}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="currentWorkplace">Current Workplace</Label>
-                  <Input
-                    id="currentWorkplace"
-                    name="currentWorkplace"
-                    value={formData.currentWorkplace}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="currentPosition">Current Position</Label>
-                  <Input
-                    id="currentPosition"
-                    name="currentPosition"
-                    value={formData.currentPosition}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                  />
-                </div>
+                {Object.entries(formData).map(([key, value]) => (
+                  <div key={key} className="grid gap-2">
+                    <Label htmlFor={key}>
+                      {key
+                        .replace(/([A-Z])/g, ' $1')
+                        .replace(/^./, (str) => str.toUpperCase())}
+                    </Label>
+                    <Input
+                      id={key}
+                      name={key}
+                      value={value}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                      type={key === 'email' ? 'email' : 'text'}
+                    />
+                  </div>
+                ))}
               </div>
 
               {isEditing ? (
@@ -344,7 +300,6 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Modals */}
       <MembershipCertificateModal
         isOpen={isCertificateModalOpen}
         onClose={() => setCertificateModalOpen(false)}

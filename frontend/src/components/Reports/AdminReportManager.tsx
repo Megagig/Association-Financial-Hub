@@ -5,19 +5,24 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+} from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '../../components/ui/tabs';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
+} from '../../components/ui/select';
+import { Label } from '../../components/ui/label';
+import { Input } from '../../components/ui/input';
+import { useToast } from '../../components/ui/use-toast';
 import { BarChart, LineChart, PieChart, Plus, Calendar } from 'lucide-react';
 import {
   Dialog,
@@ -27,8 +32,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Checkbox } from '@/components/ui/checkbox';
+} from '../../components/ui/dialog';
+import { Checkbox } from '../../components/ui/checkbox';
 
 export function AdminReportManager() {
   const { toast } = useToast();

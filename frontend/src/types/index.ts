@@ -12,6 +12,7 @@ export type RegisterFormData = {
 };
 
 export interface User {
+  id(id: any): unknown;
   _id: string; // Match backend field name
   email: string;
   firstName: string;
@@ -42,13 +43,6 @@ export interface ToastMessage {
   type: 'success' | 'error';
 }
 
-export type RegisterFormData = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-};
 export interface AuthContextType {
   showToast: (toastMessage: ToastMessage) => void;
   user: User | null;

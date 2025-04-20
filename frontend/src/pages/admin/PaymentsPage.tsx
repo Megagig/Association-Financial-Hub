@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useData } from '@/context/DataContext';
+import { useData } from '../../context/DataContext';
 import { StatusBadge } from '@/components/Dashboard/StatusBadge';
 import {
   Card,
@@ -7,9 +7,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+} from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,10 +17,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '../../components/ui/dropdown-menu';
 import { Eye, FileText, MoreVertical, Download, Check, X } from 'lucide-react';
-import { PaymentDetailsModal } from '@/components/Payments/PaymentDetailsModal';
-import { ReceiptViewerModal } from '@/components/Payments/ReceiptViewerModal';
+import { PaymentDetailsModal } from '../../components/Payments/PaymentDetailsModal';
+import { ReceiptViewerModal } from '../../components/Payments/ReceiptViewerModal';
 
 export default function PaymentsPage() {
   const { members, payments, isLoading } = useData();

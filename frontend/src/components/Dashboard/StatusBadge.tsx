@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils';
-import { PaymentStatus, LoanStatus } from '@/types';
+import { cn } from '../../lib/utils';
+import { PaymentStatus, LoanStatus } from '../../types';
 
 interface StatusBadgeProps {
   status: PaymentStatus | LoanStatus;

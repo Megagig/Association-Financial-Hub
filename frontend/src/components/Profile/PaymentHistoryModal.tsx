@@ -5,14 +5,14 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { StatusBadge } from '@/components/Dashboard/StatusBadge';
-import { useData } from '@/context/DataContext';
-import { useAuth } from '@/context/AuthContext';
+} from '../../components/ui/dialog';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { StatusBadge } from '../../components/Dashboard/StatusBadge';
+import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
 import { Download, Search, Filter, Calendar } from 'lucide-react';
-import { PaymentStatus } from '@/types';
+import { PaymentStatus } from '../../types';
 
 interface PaymentHistoryModalProps {
   isOpen: boolean;

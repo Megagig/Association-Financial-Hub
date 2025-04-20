@@ -18,9 +18,9 @@ import {
   PaymentStatus,
   LoanStatus,
   DueType,
-} from '../../types';
+} from '../types';
 
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '../components/ui/use-toast';
 import { useAuth } from './AuthContext';
 
 interface DataContextType {
@@ -530,3 +530,22 @@ export const useData = () => {
   }
   return context;
 };
+
+// // Add these functions to your DataContext
+// const getMemberProfile = (userId: string) => {
+//   // Implement your logic to fetch member profile
+//   return user;
+// };
+
+// const getAdminProfile = (userId: string) => {
+//   // Implement your logic to fetch admin profile
+//   return user;
+// };
+
+// const updateMemberProfile = async (userId: string, data: any) => {
+//   // Implement your profile update logic
+// };
+
+// const updateAdminProfile = async (userId: string, data: any) => {
+//   // Implement your profile update logic
+// };

@@ -5,10 +5,10 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { StatusBadge } from '@/components/Dashboard/StatusBadge';
+} from '../../components/ui/dialog';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { StatusBadge } from '../../components/Dashboard/StatusBadge';
 import {
   User,
   Calendar,
@@ -18,7 +18,7 @@ import {
   FileText,
   Download,
 } from 'lucide-react';
-import { PaymentStatus } from '@/types';
+import { PaymentStatus } from '../../types';
 
 interface PaymentDetailsModalProps {
   payment: {
