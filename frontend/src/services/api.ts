@@ -40,7 +40,7 @@ export const userApi = {
 
   // Update user role
   updateUserRole: (userId: string, role: string) =>
-    authenticatedRequest('/api/users/update-role', {
+    authenticatedRequest('/api/users/:id/role', {
       method: 'PUT',
       body: JSON.stringify({ userId, role }),
     }),
