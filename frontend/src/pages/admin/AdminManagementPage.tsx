@@ -31,16 +31,16 @@ import { userApi } from '@/services/api';
 export default function AdminManagementPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [admins, setAdmins] = useState([]);
+  const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchAdmins = async () => {
+  const fetchUsers = async () => {
     try {
       setIsLoading(true);
       // Use the API service instead of direct fetch
-      const data = await userApi.getAdmins();
+      const data = await userApi.getUsers();
       // Adjust based on your actual API response structure
-      setAdmins(Array.isArray(data) ? data : data.admins || []);
+      setUsers(Array.isArray(data) ? data : data.users || []);
     } catch (error) {
       console.error('Error fetching admins:', error);
       toast({
@@ -63,8 +63,8 @@ export default function AdminManagementPage() {
         description: 'User role updated successfully',
       });
 
-      // Refresh the admin list
-      fetchAdmins();
+      // Refresh the user list
+      fetchUsers();
     } catch (error) {
       console.error('Error updating role:', error);
       toast({
@@ -76,7 +76,7 @@ export default function AdminManagementPage() {
   };
 
   useEffect(() => {
-    fetchAdmins();
+    fetchUsers();
   }, []);
 
   if (user?.role !== 'superadmin') {
@@ -97,56 +97,56 @@ export default function AdminManagementPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Admin Management</h2>
+        <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
         <p className="text-muted-foreground">
-          Manage administrator access and permissions
+          Manage all users and their roles
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Administrators</CardTitle>
+          <CardTitle>All Users</CardTitle>
           <CardDescription>
-            View and manage system administrators
+            View and manage system users and their roles
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center p-4">
-              Loading administrators...
-            </div>
+            <div className="flex justify-center p-4">Loading users...</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>Current Role</TableHead>
+                  <TableHead>Change Role</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {admins.map((admin) => (
-                  <TableRow key={admin._id}>
+                {users.map((user) => (
+                  <TableRow key={user._id}>
                     <TableCell>
-                      {admin.firstName} {admin.lastName}
+                      {user.firstName} {user.lastName}
                     </TableCell>
-                    <TableCell>{admin.email}</TableCell>
+                    <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        {admin.role === 'superadmin' ? (
+                        {user.role === 'superadmin' ? (
                           <ShieldAlert className="h-4 w-4 text-red-500" />
-                        ) : (
+                        ) : user.role === 'admin' ? (
                           <Shield className="h-4 w-4 text-blue-500" />
+                        ) : (
+                          <UserCog className="h-4 w-4 text-gray-500" />
                         )}
-                        {admin.role}
+                        {user.role}
                       </div>
                     </TableCell>
                     <TableCell>
                       <Select
-                        defaultValue={admin.role}
+                        defaultValue={user.role}
                         onValueChange={(value) =>
-                          handleRoleUpdate(admin._id, value)
+                          handleRoleUpdate(user._id, value)
                         }
                       >
                         <SelectTrigger className="w-32">
