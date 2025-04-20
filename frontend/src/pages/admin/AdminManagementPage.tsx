@@ -79,16 +79,19 @@ export default function AdminManagementPage() {
     fetchUsers();
   }, []);
 
-  if (user?.role !== 'superadmin') {
+  if (!isAdmin && user?.role !== 'superadmin') {
     return (
       <div className="flex items-center justify-center h-full">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Access Restricted</CardTitle>
             <CardDescription>
-              Only superadmins can access this page.
+              You don't have permission to access this page.
             </CardDescription>
           </CardHeader>
+          <CardContent>
+            <p>This page is only available to administrators.</p>
+          </CardContent>
         </Card>
       </div>
     );

@@ -21,7 +21,7 @@ router.post(
 );
 
 // Define the route for updating user roles
-router.put('/update-role', verifyToken, updateUserRole);
-router.get('/admins', verifyToken, getAllUsers);
+router.put('/:id/role', verifyToken, updateUserRole);
+router.get('/', verifyToken, isSuperAdmin, getAllUsers);
 
 export default router;
