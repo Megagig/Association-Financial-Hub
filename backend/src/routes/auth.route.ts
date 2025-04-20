@@ -1,5 +1,6 @@
 import express from 'express';
 import { loginUser } from '../controllers/auth.controller';
+
 import { check } from 'express-validator';
 import { verifyToken } from '../middleware/auth';
 import { Request, Response } from 'express';
