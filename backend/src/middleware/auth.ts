@@ -1,3 +1,5 @@
+import User from '../models/user.model';
+
 declare global {
   namespace Express {
     interface Request {
@@ -56,10 +58,10 @@ export const isSuperAdmin = async (
   try {
     const user = await User.findById(req.userId);
 
-    if (!user || user.role !== 'superadmin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Super Admin only.' });
+    // Convert the Mongoose schema type to string for comparison
+    if (!user || user.role?.toString() !== 'superadmin') {
+      res.status(403).json({ message: 'Access denied. Super Admin only.' });
+      return;
     }
 
     next();

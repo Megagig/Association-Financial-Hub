@@ -34,6 +34,8 @@ export default function AdminManagementPage() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
@@ -79,7 +81,26 @@ export default function AdminManagementPage() {
     fetchUsers();
   }, []);
 
-  if (!isAdmin && user?.role !== 'superadmin') {
+  // if (!isAdmin && user?.role !== 'superadmin') {
+  //   return (
+  //     <div className="flex items-center justify-center h-full">
+  //       <Card className="w-full max-w-md">
+  //         <CardHeader>
+  //           <CardTitle>Access Restricted</CardTitle>
+  //           <CardDescription>
+  //             You don't have permission to access this page.
+  //           </CardDescription>
+  //         </CardHeader>
+  //         <CardContent>
+  //           <p>This page is only available to administrators.</p>
+  //         </CardContent>
+  //       </Card>
+  //     </div>
+  //   );
+  // }
+
+  // Replace the existing check:
+  if (user?.role !== 'superadmin') {
     return (
       <div className="flex items-center justify-center h-full">
         <Card className="w-full max-w-md">
@@ -90,7 +111,7 @@ export default function AdminManagementPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p>This page is only available to administrators.</p>
+            <p>This page is only available to super administrators.</p>
           </CardContent>
         </Card>
       </div>

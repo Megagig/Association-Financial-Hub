@@ -1,6 +1,6 @@
 import express from 'express';
 import { registerUser } from '../controllers/user.controller';
-import { verifyToken } from '../middleware/auth';
+import { verifyToken, isSuperAdmin } from '../middleware/auth';
 import { updateUserRole, getAllUsers } from '../controllers/user.controller';
 import { check } from 'express-validator';
 
@@ -21,7 +21,7 @@ router.post(
 );
 
 // Define the route for updating user roles
-router.put('/:id/role', verifyToken, updateUserRole);
+router.put('/:id/role', verifyToken, isSuperAdmin, updateUserRole);
 router.get('/', verifyToken, isSuperAdmin, getAllUsers);
 
 export default router;

@@ -36,7 +36,7 @@ async function authenticatedRequest(
 // User and admin management API functions
 export const userApi = {
   // Get all admins
-  getUsers: () => authenticatedRequest('/api/users/admins'),
+  getUsers: () => authenticatedRequest('/api/users'),
 
   // Update user role
   updateUserRole: (userId: string, role: string) =>
