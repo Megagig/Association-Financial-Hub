@@ -1,7 +1,7 @@
 import express from 'express';
 import { registerUser } from '../controllers/user.controller';
 import { verifyToken } from '../middleware/auth';
-import { updateUserRole, getAdmins } from '../controllers/user.controller';
+import { updateUserRole, getAllUsers } from '../controllers/user.controller';
 import { check } from 'express-validator';
 
 //Create a new router instance
@@ -22,6 +22,6 @@ router.post(
 
 // Define the route for updating user roles
 router.put('/update-role', verifyToken, updateUserRole);
-router.get('/admins', verifyToken, getAdmins);
+router.get('/admins', verifyToken, getAllUsers);
 
 export default router;
