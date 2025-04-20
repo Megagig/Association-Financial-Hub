@@ -25,6 +25,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Shield, ShieldAlert, UserCog } from 'lucide-react';
+// Import the API service
+import { userApi } from '@/services/api';
 
 export default function AdminManagementPage() {
   const { user } = useAuth();
@@ -34,12 +36,13 @@ export default function AdminManagementPage() {
 
   const fetchAdmins = async () => {
     try {
-      const response = await fetch('/api/admin/admins', {
-        credentials: 'include',
-      });
-      const data = await response.json();
-      setAdmins(data.admins);
+      setIsLoading(true);
+      // Use the API service instead of direct fetch
+      const data = await userApi.getAdmins();
+      // Adjust based on your actual API response structure
+      setAdmins(Array.isArray(data) ? data : data.admins || []);
     } catch (error) {
+      console.error('Error fetching admins:', error);
       toast({
         title: 'Error',
         description: 'Failed to fetch admin list',
@@ -52,24 +55,18 @@ export default function AdminManagementPage() {
 
   const handleRoleUpdate = async (userId: string, newRole: string) => {
     try {
-      const response = await fetch('/api/admin/update-role', {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId, role: newRole }),
-      });
-
-      if (!response.ok) throw new Error('Failed to update role');
+      // Use the API service for updating roles
+      await userApi.updateUserRole(userId, newRole);
 
       toast({
         title: 'Success',
         description: 'User role updated successfully',
       });
 
+      // Refresh the admin list
       fetchAdmins();
     } catch (error) {
+      console.error('Error updating role:', error);
       toast({
         title: 'Error',
         description: 'Failed to update user role',
@@ -114,53 +111,61 @@ export default function AdminManagementPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {admins.map((admin) => (
-                <TableRow key={admin._id}>
-                  <TableCell>
-                    {admin.firstName} {admin.lastName}
-                  </TableCell>
-                  <TableCell>{admin.email}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {admin.role === 'superadmin' ? (
-                        <ShieldAlert className="h-4 w-4 text-red-500" />
-                      ) : (
-                        <Shield className="h-4 w-4 text-blue-500" />
-                      )}
-                      {admin.role}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      defaultValue={admin.role}
-                      onValueChange={(value) =>
-                        handleRoleUpdate(admin._id, value)
-                      }
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="user">User</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="superadmin">Super Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
+          {isLoading ? (
+            <div className="flex justify-center p-4">
+              Loading administrators...
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {admins.map((admin) => (
+                  <TableRow key={admin._id}>
+                    <TableCell>
+                      {admin.firstName} {admin.lastName}
+                    </TableCell>
+                    <TableCell>{admin.email}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {admin.role === 'superadmin' ? (
+                          <ShieldAlert className="h-4 w-4 text-red-500" />
+                        ) : (
+                          <Shield className="h-4 w-4 text-blue-500" />
+                        )}
+                        {admin.role}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        defaultValue={admin.role}
+                        onValueChange={(value) =>
+                          handleRoleUpdate(admin._id, value)
+                        }
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="user">User</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="superadmin">
+                            Super Admin
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
