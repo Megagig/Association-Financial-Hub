@@ -1,4 +1,5 @@
 import { Schema, model, Types } from 'mongoose';
+import mongoose from 'mongoose';
 import { IMemberDocument } from '../types/member.types';
 // Create member schema
 const memberSchema = new mongoose.Schema(
