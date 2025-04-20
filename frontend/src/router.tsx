@@ -18,6 +18,7 @@ import ReportsPage from './pages/admin/ReportsPage';
 import SettingsPage from './pages/admin/SettingsPage';
 import HelpSupportPage from './pages/admin/HelpSupportPage';
 import IncomeExpensesPage from './pages/admin/IncomeExpensesPage';
+import AdminManagementPage from './pages/admin/AdminManagementPage'; // Import this for superadmin
 
 // Import member pages
 import MemberDashboard from './pages/member/MemberDashboard';
@@ -39,7 +40,7 @@ const router = createBrowserRouter([
   {
     path: '/admin',
     element: (
-      <PrivateRoute allowedRoles={[UserRole.ADMIN]}>
+      <PrivateRoute allowedRoles={[UserRole.ADMIN, UserRole.SUPERADMIN]}>
         <AdminLayout />
       </PrivateRoute>
     ),
@@ -53,6 +54,14 @@ const router = createBrowserRouter([
       { path: 'settings', element: <SettingsPage /> },
       { path: 'help-support', element: <HelpSupportPage /> },
       { path: 'income-expenses', element: <IncomeExpensesPage /> },
+      {
+        path: 'admin-management',
+        element: (
+          <PrivateRoute allowedRoles={[UserRole.SUPERADMIN]}>
+            <AdminManagementPage />
+          </PrivateRoute>
+        ),
+      },
     ],
   },
   {
