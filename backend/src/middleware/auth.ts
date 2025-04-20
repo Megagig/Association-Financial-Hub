@@ -1,3 +1,5 @@
+import User from '../models/user.model';
+
 declare global {
   namespace Express {
     interface Request {
@@ -43,5 +45,27 @@ export const verifyToken = (
     }
   } catch (error) {
     res.status(401).json({ message: 'Invalid token' });
+  }
+};
+
+// ...existing code...
+
+export const isSuperAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = await User.findById(req.userId);
+
+    // Convert the Mongoose schema type to string for comparison
+    if (!user || user.role?.toString() !== 'superadmin') {
+      res.status(403).json({ message: 'Access denied. Super Admin only.' });
+      return;
+    }
+
+    next();
+  } catch (error) {
+    res.status(500).json({ message: 'Error verifying super admin status' });
   }
 };

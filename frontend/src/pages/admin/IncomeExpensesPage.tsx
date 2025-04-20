@@ -146,7 +146,8 @@ export default function IncomeExpensesPage() {
     },
   ]);
 
-  if (!isAdmin && user) {
+  // Update the access check to include superadmin
+  if (!user?.role || (user.role !== 'admin' && user.role !== 'superadmin')) {
     return (
       <div className="flex items-center justify-center h-full">
         <Card className="w-full max-w-md">

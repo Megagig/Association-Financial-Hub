@@ -10,7 +10,8 @@ interface SidebarProps {
 
 export function DashboardSidebar({ className, onNavigate }: SidebarProps) {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+  const isSuperAdmin = user?.role === 'superadmin';
 
   const adminLinks = [
     { to: '/admin', label: 'Dashboard', end: true },
@@ -26,7 +27,12 @@ export function DashboardSidebar({ className, onNavigate }: SidebarProps) {
       icon: DollarSign,
       label: 'Income & Expenses',
     },
-  ];
+    isSuperAdmin && {
+      to: '/admin/admin-management',
+      label: 'Admin Management',
+      icon: 'UserCog',
+    },
+  ].filter(Boolean);
 
   const memberLinks = [
     { to: '/member', label: 'Dashboard', end: true },

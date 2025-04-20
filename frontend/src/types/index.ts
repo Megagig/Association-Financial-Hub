@@ -1,4 +1,5 @@
 export enum UserRole {
+  SUPERADMIN = 'superadmin', // Match backend casing
   ADMIN = 'admin', // Match backend casing
   USER = 'user', // Match backend casing
 }
@@ -12,7 +13,6 @@ export type RegisterFormData = {
 };
 
 export interface User {
-  id(id: any): unknown;
   _id: string; // Match backend field name
   email: string;
   firstName: string;
