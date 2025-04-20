@@ -94,16 +94,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error('No user data received');
       }
 
-      // Transform the role to match enum
-      const userWithCorrectRole = {
+      // Format the role correctly to match enum
+      const userWithCorrectRole: User = {
         ...data.user,
         role: data.user.role.toLowerCase() as UserRole,
       };
-
       setUser(userWithCorrectRole);
 
-      // Return the correct path based on role
-      return userWithCorrectRole.role === UserRole.ADMIN ? '/admin' : '/member';
+      // Determine redirect path based on role
+      if (
+        userWithCorrectRole.role === UserRole.SUPERADMIN ||
+        userWithCorrectRole.role === UserRole.ADMIN
+      ) {
+        return '/admin';
+      }
+      return '/member';
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -111,6 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsLoading(false);
     }
   };
+
   const logout = async (): Promise<void> => {
     try {
       await fetch(`${API_BASE_URL}/api/auth/logout`, {

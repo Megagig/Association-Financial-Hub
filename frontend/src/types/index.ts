@@ -13,7 +13,6 @@ export type RegisterFormData = {
 };
 
 export interface User {
-  id(id: any): unknown;
   _id: string; // Match backend field name
   email: string;
   firstName: string;
