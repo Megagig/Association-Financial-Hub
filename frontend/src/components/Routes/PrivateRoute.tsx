@@ -23,10 +23,14 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
   }
 
   if (!allowedRoles.includes(user.role as UserRole)) {
-    // Redirect to appropriate dashboard based on role
-    return (
-      <Navigate to={user.role === 'admin' ? '/admin' : '/member'} replace />
-    );
+    // Redirect based on role
+    if (user.role === UserRole.SUPERADMIN) {
+      return <Navigate to="/admin" replace />;
+    } else if (user.role === UserRole.ADMIN) {
+      return <Navigate to="/admin" replace />;
+    } else {
+      return <Navigate to="/member" replace />;
+    }
   }
 
   return <>{children}</>;
