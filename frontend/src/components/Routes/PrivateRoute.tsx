@@ -22,18 +22,10 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
     return <Navigate to="/login" replace />;
   }
 
-  // Convert roles to lowercase for comparison
-  const userRole = user.role.toLowerCase();
-  const hasAllowedRole = allowedRoles.some(
-    (role) => role.toLowerCase() === userRole
-  );
-
-  if (!hasAllowedRole) {
+  if (!allowedRoles.includes(user.role as UserRole)) {
+    // Redirect to appropriate dashboard based on role
     return (
-      <Navigate
-        to={userRole === UserRole.ADMIN ? '/admin' : '/member'}
-        replace
-      />
+      <Navigate to={user.role === 'admin' ? '/admin' : '/member'} replace />
     );
   }
 
