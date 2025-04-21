@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { Member } from '../models/member.model';
 import User from '../models/user.model';
 import mongoose from 'mongoose';
@@ -6,7 +6,11 @@ import { Payment } from '../models/payment.model';
 import { Loan } from '../models/loan.model';
 
 // create a new member
-export async function createMember(req: Request, res: Response) {
+export async function createMember(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
   try {
     const {
       userId,
@@ -32,21 +36,22 @@ export async function createMember(req: Request, res: Response) {
 
     // Basic validation
     if (!userId || !firstName || !lastName || !email) {
-      return res.status(400).json({ message: 'Required fields missing' });
+      res.status(400).json({ message: 'Required fields missing' });
+      return;
     }
 
     //check if user exist
     const existingUser = await User.findById(userId);
     if (!existingUser) {
-      return res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
 
     //check if member already exists
     const existingMember = await Member.findOne({ userId });
     if (existingMember) {
-      return res
-        .status(400)
-        .json({ message: 'Member already exists for this user' });
+      res.status(400).json({ message: 'Member already exists for this user' });
+      return;
     }
 
     // Create a new member
@@ -73,7 +78,7 @@ export async function createMember(req: Request, res: Response) {
     });
 
     await member.save();
-    // reurn the created member
+    // return the created member
     res.status(201).json({ message: 'Member created successfully', member });
   } catch (error) {
     console.error(error);
@@ -82,7 +87,11 @@ export async function createMember(req: Request, res: Response) {
 }
 
 // get all members
-export const getAllMembers = async (req: Request, res: Response) => {
+export const getAllMembers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { page = 1, limit = 20 } = req.query;
     const members = await Member.find()
@@ -98,18 +107,24 @@ export const getAllMembers = async (req: Request, res: Response) => {
 };
 
 // get a single member by id
-export const getMemberById = async (req: Request, res: Response) => {
+export const getMemberById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid member ID' });
+      res.status(400).json({ message: 'Invalid member ID' });
+      return;
     }
 
     const member = await Member.findById(id);
 
     if (!member) {
-      return res.status(404).json({ message: 'Member not found' });
+      res.status(404).json({ message: 'Member not found' });
+      return;
     }
 
     res.status(200).json(member);
@@ -120,18 +135,24 @@ export const getMemberById = async (req: Request, res: Response) => {
 };
 
 // Get member by user ID
-export const getMemberByUserId = async (req: Request, res: Response) => {
+export const getMemberByUserId = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { userId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: 'Invalid user ID' });
+      res.status(400).json({ message: 'Invalid user ID' });
+      return;
     }
 
     const member = await Member.findOne({ userId });
 
     if (!member) {
-      return res.status(404).json({ message: 'Member not found' });
+      res.status(404).json({ message: 'Member not found' });
+      return;
     }
 
     res.status(200).json(member);
@@ -142,7 +163,11 @@ export const getMemberByUserId = async (req: Request, res: Response) => {
 };
 
 // Update member
-export const updateMember = async (req: Request, res: Response) => {
+export const updateMember = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { id } = req.params;
     const {
@@ -168,7 +193,8 @@ export const updateMember = async (req: Request, res: Response) => {
     } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid member ID' });
+      res.status(400).json({ message: 'Invalid member ID' });
+      return;
     }
 
     const updatedMember = await Member.findByIdAndUpdate(
@@ -198,7 +224,8 @@ export const updateMember = async (req: Request, res: Response) => {
     );
 
     if (!updatedMember) {
-      return res.status(404).json({ message: 'Member not found' });
+      res.status(404).json({ message: 'Member not found' });
+      return;
     }
 
     res.status(200).json(updatedMember);
@@ -214,7 +241,8 @@ export const getMemberPayments = async (req: Request, res: Response) => {
     const { userId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: 'Invalid user ID' });
+      res.status(400).json({ message: 'Invalid user ID' });
+      return;
     }
 
     const payments = await Payment.find({ userId }).sort({ date: -1 });
@@ -226,12 +254,17 @@ export const getMemberPayments = async (req: Request, res: Response) => {
 };
 
 // Get member loans
-export const getMemberLoans = async (req: Request, res: Response) => {
+export const getMemberLoans = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { userId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: 'Invalid user ID' });
+      res.status(400).json({ message: 'Invalid user ID' });
+      return;
     }
 
     const loans = await Loan.find({ userId }).sort({ applicationDate: -1 });

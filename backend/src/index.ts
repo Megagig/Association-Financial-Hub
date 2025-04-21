@@ -5,6 +5,7 @@ import 'dotenv/config';
 import connectDB from './db/dbConnect';
 import userRoutes from './routes/users.route';
 import authRoutes from './routes/auth.route';
+import memberRoutes from './routes/member.route';
 
 const app = express();
 // Load environment variables from .env file
@@ -31,6 +32,7 @@ app.use(
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/members', memberRoutes);
 // start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

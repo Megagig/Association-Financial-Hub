@@ -10,14 +10,13 @@ import {
   getFinancialSummary,
 } from '../controllers/member.controller';
 
-
 const router = express.Router();
 
 // Admin routes
-router.get('/',, getAllMembers);
+router.get('/', getAllMembers);
 router.post('/', createMember);
 router.put('/:id', updateMember);
-router.get('/financial-summary',getFinancialSummary);
+router.get('/financial-summary', getFinancialSummary);
 
 // Member routes (both admin and member can access)
 router.get('/user/:userId', getMemberByUserId);
