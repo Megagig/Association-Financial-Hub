@@ -11,20 +11,12 @@ export const createPayment = async (
   res: Response
 ): Promise<void> => {
   try {
-    const {
-      userId,
-      amount,
-      loanId,
-      type,
-      description,
-      date,
-      status: PaymentStatus,
-      receiptUrl,
-    } = req.body;
+    const { userId, amount, loanId, type, description, date, receiptUrl } =
+      req.body;
 
     // Check if user exists
-    const existingPayment = await User.findById(userId);
-    if (!existingPayment) {
+    const existingUser = await User.findById(userId);
+    if (!existingUser) {
       res.status(404).json({ message: 'User not found' });
       return;
     }
@@ -37,7 +29,7 @@ export const createPayment = async (
       type,
       description,
       date: date || new Date(),
-      status: PaymentStatus.PENDING,
+      status: PaymentStatus.PENDING, // Set as default
       receiptUrl,
     });
 
