@@ -9,6 +9,13 @@ export enum LoanStatus {
   PAID = 'paid',
 }
 
+export enum RepaymentTerms {
+  THREE_MONTHS = '3_months',
+  SIX_MONTHS = '6_months',
+  TWELVE_MONTHS = '12_months',
+  TWENTY_FOUR_MONTHS = '24_months',
+}
+
 // Base interface (database-agnostic)
 export interface ILoan {
   userId: Types.ObjectId;
@@ -18,7 +25,7 @@ export interface ILoan {
   status: LoanStatus;
   approvedBy?: Types.ObjectId; // Optional admin reference
   approvalDate?: Date;
-  repaymentTerms?: string;
+  repaymentTerms?: RepaymentTerms;
   dueDate?: Date;
 }
 

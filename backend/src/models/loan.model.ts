@@ -51,8 +51,8 @@ const LoanSchema = new Schema<ILoanDocument>(
     },
     repaymentTerms: {
       type: String,
-      enum: ['30_days', '60_days', '90_days'],
-      default: '30_days',
+      enum: ['3_months', '6_months', '12_months', '24_months'], // Match frontend values
+      default: '12_months',
     },
     dueDate: {
       type: Date,

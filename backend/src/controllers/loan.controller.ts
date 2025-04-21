@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import User from '../models/user.model';
 import { Loan } from '../models/loan.model';
-import { LoanStatus } from '../types/loan.types';
+import { LoanStatus, RepaymentTerms } from '../types/loan.types';
 import { Member } from '../models/member.model';
 
 // Create a new loan application
@@ -158,6 +158,18 @@ export const updateLoanStatus = async (
   try {
     const { id } = req.params;
     const { status, repaymentTerms, dueDate } = req.body;
+
+    // Validate repaymentTerms
+    if (
+      repaymentTerms &&
+      !Object.values(RepaymentTerms).includes(repaymentTerms)
+    ) {
+      res.status(400).json({
+        message: 'Invalid repayment terms',
+        validTerms: Object.values(RepaymentTerms),
+      });
+      return;
+    }
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       res.status(400).json({ message: 'Invalid loan ID' });

@@ -326,13 +326,12 @@ export default function LoansPage() {
                 <select
                   id="repayment-terms"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  defaultValue="12_months"
                 >
-                  <option value="3-months">3 months</option>
-                  <option value="6-months">6 months</option>
-                  <option value="12-months" selected>
-                    12 months
-                  </option>
-                  <option value="24-months">24 months</option>
+                  <option value="3_months">3 months</option>
+                  <option value="6_months">6 months</option>
+                  <option value="12_months">12 months</option>
+                  <option value="24_months">24 months</option>
                 </select>
               </div>
             )}
