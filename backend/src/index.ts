@@ -35,6 +35,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/members', memberRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/loans', paymentRoutes);
+
 // start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

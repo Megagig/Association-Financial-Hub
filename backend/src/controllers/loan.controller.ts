@@ -11,7 +11,8 @@ export const applyForLoan = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { userId, amount, purpose, repaymentTerms } = req.body;
+    const { amount, purpose, repaymentTerms } = req.body;
+    const userId = req.userId; // Use authenticated user's ID for security
 
     // Check if user exists
     const user = await User.findById(userId);
@@ -51,11 +52,55 @@ export const applyForLoan = async (
   }
 };
 
-// Get all loans
+// Get all loans with pagination
 export const getAllLoans = async (req: Request, res: Response) => {
   try {
-    const loans = await Loan.find().sort({ applicationDate: -1 });
-    res.status(200).json(loans);
+    // Parse pagination parameters
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    // Parse filters if provided
+    const filterOptions: any = {};
+
+    // Add status filter if provided
+    if (
+      req.query.status &&
+      Object.values(LoanStatus).includes(req.query.status as LoanStatus)
+    ) {
+      filterOptions.status = req.query.status;
+    }
+
+    // Add date range filter if provided
+    if (req.query.startDate && req.query.endDate) {
+      filterOptions.applicationDate = {
+        $gte: new Date(req.query.startDate as string),
+        $lte: new Date(req.query.endDate as string),
+      };
+    }
+
+    // Count total documents for pagination info
+    const totalLoans = await Loan.countDocuments(filterOptions);
+    const totalPages = Math.ceil(totalLoans / limit);
+
+    // Get loans with pagination
+    const loans = await Loan.find(filterOptions)
+      .sort({ applicationDate: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Return paginated results with metadata
+    res.status(200).json({
+      loans,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        pageSize: limit,
+        totalItems: totalLoans,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
@@ -82,6 +127,22 @@ export const getLoanById = async (
       return;
     }
 
+    // Check if user has permission to view this loan
+    if (loan.userId.toString() !== req.userId) {
+      // Check if user is admin or superadmin
+      const user = await User.findById(req.userId);
+      if (
+        !user ||
+        (user.role?.toString() !== 'admin' &&
+          user.role?.toString() !== 'superadmin')
+      ) {
+        res.status(403).json({
+          message: 'Access denied. You can only view your own loans.',
+        });
+        return;
+      }
+    }
+
     res.status(200).json(loan);
   } catch (error) {
     console.error(error);
@@ -96,8 +157,7 @@ export const updateLoanStatus = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const { status, approvedBy, approvalDate, repaymentTerms, dueDate } =
-      req.body;
+    const { status, repaymentTerms, dueDate } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       res.status(400).json({ message: 'Invalid loan ID' });
@@ -116,14 +176,34 @@ export const updateLoanStatus = async (
       return;
     }
 
+    // Check for valid status transitions
+    const validTransitions: Record<LoanStatus, LoanStatus[]> = {
+      [LoanStatus.PENDING]: [LoanStatus.APPROVED, LoanStatus.REJECTED],
+      [LoanStatus.APPROVED]: [LoanStatus.PAID, LoanStatus.DEFAULTED],
+      [LoanStatus.REJECTED]: [],
+      [LoanStatus.PAID]: [],
+      [LoanStatus.DEFAULTED]: [LoanStatus.PAID],
+    };
+
+    if (
+      !validTransitions[loan.status].includes(status) &&
+      loan.status !== status
+    ) {
+      res.status(400).json({
+        message: `Invalid status transition from ${loan.status} to ${status}`,
+        allowedTransitions: validTransitions[loan.status],
+      });
+      return;
+    }
+
     // Update loan fields
     loan.status = status;
 
     if (status === LoanStatus.APPROVED) {
-      loan.approvedBy = approvedBy;
-      loan.approvalDate = approvalDate || new Date();
+      loan.approvedBy = new mongoose.Types.ObjectId(req.userId); // Use the authenticated admin's ID
+      loan.approvalDate = new Date();
       loan.repaymentTerms = repaymentTerms || loan.repaymentTerms;
-      loan.dueDate = dueDate || loan.dueDate;
+      loan.dueDate = dueDate ? new Date(dueDate) : loan.dueDate;
 
       // Update member's loan balance if loan is approved
       const member = await Member.findOne({ userId: loan.userId });
@@ -157,7 +237,7 @@ export const updateLoanStatus = async (
   }
 };
 
-// Get user's loan history
+// Get user's loan history with pagination
 export const getUserLoanHistory = async (
   req: Request,
   res: Response
@@ -170,8 +250,68 @@ export const getUserLoanHistory = async (
       return;
     }
 
-    const loans = await Loan.find({ userId }).sort({ applicationDate: -1 });
-    res.status(200).json(loans);
+    // Check if user has permission to view this loan history
+    if (userId !== req.userId) {
+      // Check if user is admin or superadmin
+      const user = await User.findById(req.userId);
+      if (
+        !user ||
+        (user.role?.toString() !== 'admin' &&
+          user.role?.toString() !== 'superadmin')
+      ) {
+        res.status(403).json({
+          message: 'Access denied. You can only view your own loan history.',
+        });
+        return;
+      }
+    }
+
+    // Parse pagination parameters
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    // Parse filters if provided
+    const filterOptions: any = { userId };
+
+    // Add status filter if provided
+    if (
+      req.query.status &&
+      Object.values(LoanStatus).includes(req.query.status as LoanStatus)
+    ) {
+      filterOptions.status = req.query.status;
+    }
+
+    // Add date range filter if provided
+    if (req.query.startDate && req.query.endDate) {
+      filterOptions.applicationDate = {
+        $gte: new Date(req.query.startDate as string),
+        $lte: new Date(req.query.endDate as string),
+      };
+    }
+
+    // Count total documents for pagination info
+    const totalLoans = await Loan.countDocuments(filterOptions);
+    const totalPages = Math.ceil(totalLoans / limit);
+
+    // Get loans with pagination
+    const loans = await Loan.find(filterOptions)
+      .sort({ applicationDate: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Return paginated results with metadata
+    res.status(200).json({
+      loans,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        pageSize: limit,
+        totalItems: totalLoans,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
