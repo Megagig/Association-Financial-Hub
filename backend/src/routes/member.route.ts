@@ -9,19 +9,28 @@ import {
   getMemberLoans,
   getFinancialSummary,
 } from '../controllers/member.controller';
+import { verifyToken } from '../middleware/auth';
+import { isAdminOrSuperAdmin, canAccessMember } from '../middleware/permission';
 
 const router = express.Router();
 
-// Admin routes
-router.get('/', getAllMembers);
-router.post('/', createMember);
-router.put('/:id', updateMember);
-router.get('/financial-summary', getFinancialSummary);
+// Admin routes - specific routes first
+router.get(
+  '/financial-summary',
+  verifyToken,
+  isAdminOrSuperAdmin,
+  getFinancialSummary
+);
+router.get('/user/:userId', verifyToken, canAccessMember, getMemberByUserId); // Get member Profile by userId
 
-// Member routes (both admin and member can access)
-router.get('/user/:userId', getMemberByUserId);
-router.get('/:id', getMemberById);
-router.get('/:id/payments', getMemberPayments);
-router.get('/:id/loans', getMemberLoans);
+// Generic admin routes
+router.get('/', verifyToken, isAdminOrSuperAdmin, getAllMembers); // Get all members Profile
+router.post('/', verifyToken, isAdminOrSuperAdmin, createMember); // Create a new member Profile
+
+// Member specific routes
+router.get('/:id/payments', verifyToken, canAccessMember, getMemberPayments);
+router.get('/:id/loans', verifyToken, canAccessMember, getMemberLoans);
+router.get('/member/:id', verifyToken, canAccessMember, getMemberById);
+router.put('/:id', verifyToken, canAccessMember, updateMember); // Update member Profile by Member ID
 
 export default router;

@@ -11,19 +11,21 @@ export const isAdmin = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const user = await User.findById(req.userId);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
 
     // Check if user is admin
     if (user.role?.toString() !== 'admin') {
-      return res
+      res
         .status(403)
         .json({ message: 'Access denied. Admin privileges required' });
+      return;
     }
 
     next();
@@ -42,12 +44,13 @@ export const canAccessMember = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const user = await User.findById(req.userId);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
 
     // Admin can access any member
@@ -65,17 +68,20 @@ export const canAccessMember = async (
     if (memberId) {
       const member = await Member.findById(memberId);
       if (!member) {
-        return res.status(404).json({ message: 'Member not found' });
+        res.status(404).json({ message: 'Member not found' });
+        return;
       }
 
       if (member.userId.toString() !== req.userId) {
-        return res.status(403).json({ message: 'Access denied' });
+        res.status(403).json({ message: 'Access denied' });
+        return;
       }
     }
     // If we're checking by userId
     else if (targetUserId) {
       if (targetUserId !== req.userId) {
-        return res.status(403).json({ message: 'Access denied' });
+        res.status(403).json({ message: 'Access denied' });
+        return;
       }
     }
 
@@ -83,5 +89,31 @@ export const canAccessMember = async (
   } catch (error) {
     console.error('Permission check error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const isAdminOrSuperAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = await User.findById(req.userId);
+
+    // Allow both admin and superadmin roles
+    if (
+      !user ||
+      (user.role?.toString() !== 'admin' &&
+        user.role?.toString() !== 'superadmin')
+    ) {
+      res
+        .status(403)
+        .json({ message: 'Access denied. Admin or Super Admin only.' });
+      return;
+    }
+
+    next();
+  } catch (error) {
+    res.status(500).json({ message: 'Error verifying admin status' });
   }
 };

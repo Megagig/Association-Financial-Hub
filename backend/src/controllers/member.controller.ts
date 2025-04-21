@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 import { Payment } from '../models/payment.model';
 import { Loan } from '../models/loan.model';
 
-// create a new member
+// create a new member Profile
 export async function createMember(
   req: Request,
   res: Response,
@@ -86,27 +86,54 @@ export async function createMember(
   }
 }
 
-// get all members
+// Get all members Profile with pagination
 export const getAllMembers = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
+    // Destructure query parameters (not req.body)
     const { page = 1, limit = 20 } = req.query;
-    const members = await Member.find()
-      .skip((Number(page) - 1) * Number(limit))
-      .limit(Number(limit))
-      .populate('userId', 'name email');
 
-    res.status(200).json(members);
+    // Convert to numbers and validate
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    if (isNaN(pageNumber) || isNaN(limitNumber)) {
+      res.status(400).json({ message: 'Invalid pagination parameters' });
+      return;
+    }
+
+    const members = await Member.find()
+      .skip((pageNumber - 1) * limitNumber)
+      .limit(limitNumber)
+      .populate('userId', 'name email')
+      .lean(); // Convert to plain JS objects
+
+    // Get total count for pagination metadata
+    const totalMembers = await Member.countDocuments();
+
+    res.status(200).json({
+      success: true,
+      data: members,
+      pagination: {
+        page: pageNumber,
+        limit: limitNumber,
+        total: totalMembers,
+        totalPages: Math.ceil(totalMembers / limitNumber),
+      },
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error fetching members' });
+    console.error('Error in getAllMembers:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while fetching members',
+    });
   }
 };
 
-// get a single member by id
+// get a single member Profile by member id
 export const getMemberById = async (
   req: Request,
   res: Response,
@@ -134,7 +161,7 @@ export const getMemberById = async (
   }
 };
 
-// Get member by user ID
+// Get member Profile by user ID
 export const getMemberByUserId = async (
   req: Request,
   res: Response,
@@ -144,25 +171,47 @@ export const getMemberByUserId = async (
     const { userId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      res.status(400).json({ message: 'Invalid user ID' });
+      res.status(400).json({
+        success: false,
+        message: 'Invalid ID format',
+      });
       return;
     }
 
-    const member = await Member.findOne({ userId });
+    const member = await Member.findOne({
+      userId: new mongoose.Types.ObjectId(userId),
+    }).populate('userId', 'name email');
 
     if (!member) {
-      res.status(404).json({ message: 'Member not found' });
+      console.log(`No member found for userId: ${userId}`);
+      // Check if user exists at all
+      const userExists = await User.exists({
+        _id: new mongoose.Types.ObjectId(userId),
+      });
+
+      res.status(404).json({
+        success: false,
+        message: userExists
+          ? 'Member profile not found for this user'
+          : 'User does not exist',
+        userId: userId,
+      });
       return;
     }
 
-    res.status(200).json(member);
+    res.status(200).json({
+      success: true,
+      data: member,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Something went wrong' });
+    console.error(`Error in getMemberByUserId: ${error}`);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
   }
 };
-
-// Update member
+// Update member Profile
 export const updateMember = async (
   req: Request,
   res: Response,
@@ -228,7 +277,10 @@ export const updateMember = async (
       return;
     }
 
-    res.status(200).json(updatedMember);
+    res.status(200).json({
+      message: 'Member updated successfully',
+      data: updatedMember,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
