@@ -63,18 +63,23 @@ export const getAllLoans = async (req: Request, res: Response) => {
 };
 
 // Get loan by ID
-export const getLoanById = async (req: Request, res: Response) => {
+export const getLoanById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid loan ID' });
+      res.status(400).json({ message: 'Invalid loan ID' });
+      return;
     }
 
     const loan = await Loan.findById(id);
 
     if (!loan) {
-      return res.status(404).json({ message: 'Loan not found' });
+      res.status(404).json({ message: 'Loan not found' });
+      return;
     }
 
     res.status(200).json(loan);
@@ -85,24 +90,30 @@ export const getLoanById = async (req: Request, res: Response) => {
 };
 
 // Update loan status
-export const updateLoanStatus = async (req: Request, res: Response) => {
+export const updateLoanStatus = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
     const { status, approvedBy, approvalDate, repaymentTerms, dueDate } =
       req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid loan ID' });
+      res.status(400).json({ message: 'Invalid loan ID' });
+      return;
     }
 
     if (!Object.values(LoanStatus).includes(status)) {
-      return res.status(400).json({ message: 'Invalid loan status' });
+      res.status(400).json({ message: 'Invalid loan status' });
+      return;
     }
 
     const loan = await Loan.findById(id);
 
     if (!loan) {
-      return res.status(404).json({ message: 'Loan not found' });
+      res.status(404).json({ message: 'Loan not found' });
+      return;
     }
 
     // Update loan fields
@@ -147,12 +158,16 @@ export const updateLoanStatus = async (req: Request, res: Response) => {
 };
 
 // Get user's loan history
-export const getUserLoanHistory = async (req: Request, res: Response) => {
+export const getUserLoanHistory = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { userId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: 'Invalid user ID' });
+      res.status(400).json({ message: 'Invalid user ID' });
+      return;
     }
 
     const loans = await Loan.find({ userId }).sort({ applicationDate: -1 });
