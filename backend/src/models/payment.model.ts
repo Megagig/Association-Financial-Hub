@@ -56,8 +56,8 @@ const PaymentSchema = new Schema<IPaymentDocument>(
   }
 );
 
-// Indexes
-PaymentSchema.index({ date: -1 }); // For sorting recent payments first
-PaymentSchema.index({ userId: 1, status: 1 }); // For common queries
+// // Indexes
+// PaymentSchema.index({ date: -1 }); // For sorting recent payments first
+// PaymentSchema.index({ userId: 1, status: 1 }); // For common queries
 
 export const Payment = model<IPaymentDocument>('Payment', PaymentSchema);
