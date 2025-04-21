@@ -97,8 +97,5 @@ const memberSchema = new mongoose.Schema(
   }
 );
 
-// Indexes for common queries
-memberSchema.index({ email: 1 });
-memberSchema.index({ membershipId: 1 });
 // Create and export the model
 export const Member = mongoose.model<IMemberDocument>('Member', memberSchema);
