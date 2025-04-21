@@ -1,3 +1,5 @@
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 import User from '../models/user.model';
 
 declare global {
@@ -11,10 +13,12 @@ declare global {
 interface JWTPayload {
   userId: string;
 }
+/**Middleware to verify JWT token
+and attach user ID to the request object
+This middleware checks for the presence of a JWT token in the request cookies,
+verifies it, and if valid, extracts the user ID from the token payload.
 
-// export default verifyToken;
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+ */
 
 export const verifyToken = (
   req: Request,
@@ -48,8 +52,7 @@ export const verifyToken = (
   }
 };
 
-// ...existing code...
-
+// Middleware to check if the user is a superadmin
 export const isSuperAdmin = async (
   req: Request,
   res: Response,
