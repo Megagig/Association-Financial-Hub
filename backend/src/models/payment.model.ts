@@ -14,6 +14,11 @@ const PaymentSchema = new Schema<IPaymentDocument>(
       required: true,
       min: 0.01, // Validation
     },
+    loanId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Loan',
+      required: false,
+    },
     type: {
       type: String,
       enum: ['dues', 'donation', 'pledge', 'levy'],

@@ -11,6 +11,7 @@ export enum PaymentStatus {
 export interface IPayment {
   userId: Types.ObjectId;
   amount: number;
+  loanId?: string;
   type: 'dues' | 'levy' | 'pledge' | 'donation';
   description: string;
   date: Date;
