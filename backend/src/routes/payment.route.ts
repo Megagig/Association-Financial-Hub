@@ -21,7 +21,7 @@ router.put(
 );
 
 // Member routes (both admin and member can access)
-router.post('/', verifyToken, canAccessMember, createPayment);
+router.post('/', verifyToken, canAccessMember, createPayment); // Create a new payment
 router.get(
   '/user/:userId',
   verifyToken,
