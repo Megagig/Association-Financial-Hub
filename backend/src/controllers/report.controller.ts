@@ -19,18 +19,23 @@ export const getAllReports = async (req: Request, res: Response) => {
 };
 
 // Get report by ID
-export const getReportById = async (req: Request, res: Response) => {
+export const getReportById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid report ID' });
+      res.status(400).json({ message: 'Invalid report ID' });
+      return;
     }
 
     const report = await Report.findById(id);
 
     if (!report) {
-      return res.status(404).json({ message: 'Report not found' });
+      res.status(404).json({ message: 'Report not found' });
+      return;
     }
 
     res.status(200).json(report);
@@ -41,7 +46,10 @@ export const getReportById = async (req: Request, res: Response) => {
 };
 
 // Generate a new report
-export const generateReport = async (req: Request, res: Response) => {
+export const generateReport = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { title, description, dateRange, type, generatedBy } = req.body;
 
@@ -51,9 +59,8 @@ export const generateReport = async (req: Request, res: Response) => {
       !generator ||
       generator.role?.toString() !== UserRole.ADMIN.toString()
     ) {
-      return res
-        .status(400)
-        .json({ message: 'Invalid generator or not an admin' });
+      res.status(400).json({ message: 'Invalid generator or not an admin' });
+      return;
     }
 
     // Parse date range
@@ -184,7 +191,8 @@ export const generateReport = async (req: Request, res: Response) => {
         break;
       }
       default:
-        return res.status(400).json({ message: 'Invalid report type' });
+        res.status(400).json({ message: 'Invalid report type' });
+        return;
     }
 
     // Create new report
