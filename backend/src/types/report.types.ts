@@ -4,6 +4,7 @@ import { Types } from 'mongoose';
 export type ReportType =
   | 'dues'
   | 'payments'
+  | 'donations'
   | 'loans'
   | 'levy'
   | 'summary'

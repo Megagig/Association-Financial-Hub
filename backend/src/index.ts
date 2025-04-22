@@ -9,6 +9,7 @@ import memberRoutes from './routes/member.route';
 import paymentRoutes from './routes/payment.route';
 import loanRoutes from './routes/loan.route';
 import dueRoutes from './routes/due.route';
+import reportRoutes from './routes/report.route';
 
 const app = express();
 // Load environment variables from .env file
@@ -39,6 +40,7 @@ app.use('/api/members', memberRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/dues', dueRoutes);
+app.use('/api/reports', reportRoutes);
 
 // start the server
 app.listen(PORT, () => {
