@@ -93,22 +93,6 @@ export const updateUserRole = async (
   }
 };
 
-// This function retrieves all admins from the database
-// It checks if the requestor is an admin before allowing the retrieval
-// export const getAdmins = async (req: Request, res: Response) => {
-//   try {
-//     // 1️⃣ Get all admins from the database
-//     const admins = await User.find({
-//       role: { $in: ['admin', 'superadmin'] },
-//     }).select('-password');
-//     // 2️⃣ Return the list of admins
-//     res.status(200).json(admins);
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ message: 'Error fetching admins' });
-//   }
-// };
-
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     // Get all users from the database
