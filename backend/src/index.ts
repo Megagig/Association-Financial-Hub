@@ -11,6 +11,7 @@ import loanRoutes from './routes/loan.route';
 import dueRoutes from './routes/due.route';
 import reportRoutes from './routes/report.route';
 import userSettingRoutes from './routes/userSetting.route';
+import transactionRoutes from './routes/transaction.route';
 
 const app = express();
 // Load environment variables from .env file
@@ -43,6 +44,7 @@ app.use('/api/loans', loanRoutes);
 app.use('/api/dues', dueRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/user-settings', userSettingRoutes);
+app.use('/api/transactions', transactionRoutes);
 
 // start the server
 app.listen(PORT, () => {

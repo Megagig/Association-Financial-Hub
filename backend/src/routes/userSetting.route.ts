@@ -10,15 +10,18 @@ import {
 import { verifyToken, isSuperAdmin } from '../middleware/auth';
 
 const router = express.Router();
+// User routes
+router.get('/settings/:userId', verifyToken, getUserSettings);
+router.put('/settings/:userId', verifyToken, updateUserSettings);
+router.put('/profile/:userId', verifyToken, updateProfile);
+router.post('/change-password/:userId', verifyToken, changePassword);
 
-// Admin and member only routes
-router.get('/user/:id', verifyToken, getUserSettings);
-router.post('/', verifyToken, changePassword);
-router.post('/:id', verifyToken, updateProfile);
-router.get('/userId', verifyToken, updateUserSettings);
-
-//superadmin only
-router.post('/:id', verifyToken, isSuperAdmin, updateUserRole);
-router.get('/', verifyToken, isSuperAdmin, getAllUsers);
-
+// Admin routes
+router.get('/admin/users', verifyToken, isSuperAdmin, getAllUsers);
+router.put(
+  '/admin/users/:userId/role',
+  verifyToken,
+  isSuperAdmin,
+  updateUserRole
+);
 export default router;
