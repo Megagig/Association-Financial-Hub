@@ -7,44 +7,6 @@ import { Payment } from '../models/payment.model';
 import { Loan } from '../models/loan.model';
 import { UserRole } from '../types/user.types';
 
-// Get all reports
-export const getAllReports = async (req: Request, res: Response) => {
-  try {
-    const reports = await Report.find().sort({ generatedAt: -1 });
-    res.status(200).json(reports);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-// Get report by ID
-export const getReportById = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      res.status(400).json({ message: 'Invalid report ID' });
-      return;
-    }
-
-    const report = await Report.findById(id);
-
-    if (!report) {
-      res.status(404).json({ message: 'Report not found' });
-      return;
-    }
-
-    res.status(200).json(report);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
 // Generate a new report
 export const generateReport = async (
   req: Request,
@@ -211,6 +173,85 @@ export const generateReport = async (
 
     await report.save();
     res.status(201).json(report);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// // Get all reports
+// export const getAllReports = async (req: Request, res: Response) => {
+//   try {
+//     const reports = await Report.find().sort({ generatedAt: -1 });
+//     res.status(200).json(reports);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// };
+
+// Get all reports with pagination
+export const getAllReports = async (req: Request, res: Response) => {
+  try {
+    // Extract pagination parameters from query string
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    // Calculate skip value for pagination
+    const skip = (page - 1) * limit;
+
+    // Count total documents for pagination metadata
+    const total = await Report.countDocuments();
+
+    // Get paginated reports
+    const reports = await Report.find()
+      .sort({ generatedAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    res.status(200).json({
+      reports,
+      pagination: {
+        totalReports: total,
+        totalPages,
+        currentPage: page,
+        limit,
+        hasNextPage,
+        hasPrevPage,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get report by ID
+export const getReportById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      res.status(400).json({ message: 'Invalid report ID' });
+      return;
+    }
+
+    const report = await Report.findById(id);
+
+    if (!report) {
+      res.status(404).json({ message: 'Report not found' });
+      return;
+    }
+
+    res.status(200).json(report);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
