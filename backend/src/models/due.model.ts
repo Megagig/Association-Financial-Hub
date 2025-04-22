@@ -72,8 +72,8 @@ const DueSchema = new Schema<IDueDocument>(
   }
 );
 
-// Indexes
-DueSchema.index({ dueDate: 1 }); // For finding upcoming dues
-DueSchema.index({ userId: 1, status: 1 }); // For user-specific queries
+// // Indexes
+// DueSchema.index({ dueDate: 1 }); // For finding upcoming dues
+// DueSchema.index({ userId: 1, status: 1 }); // For user-specific queries
 
 export const Due = model<IDueDocument>('Due', DueSchema);
