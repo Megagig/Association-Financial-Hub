@@ -61,3 +61,5 @@ const PaymentSchema = new Schema<IPaymentDocument>(
 // PaymentSchema.index({ userId: 1, status: 1 }); // For common queries
 
 export const Payment = model<IPaymentDocument>('Payment', PaymentSchema);
+
+export { PaymentStatus };

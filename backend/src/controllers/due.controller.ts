@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import Due, { DueType } from '../models/Due';
-import Member from '../models/Member';
-import User, { UserRole } from '../models/User';
-import { PaymentStatus } from '../models/Payment';
+import { DueType } from '../types/due.types';
+import { Due } from '../models/due.model';
+import { Member } from '../models/member.model';
+import User from '../models/user.model';
+import { PaymentStatus } from '../models/payment.model';
+import UserRole from '../types/user.types';
 
 // Get all dues
 export const getAllDues = async (req: Request, res: Response) => {
@@ -17,18 +19,23 @@ export const getAllDues = async (req: Request, res: Response) => {
 };
 
 // Get due by ID
-export const getDueById = async (req: Request, res: Response) => {
+export const getDueById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid due ID' });
+      res.status(400).json({ message: 'Invalid due ID' });
+      return;
     }
 
     const due = await Due.findById(id);
 
     if (!due) {
-      return res.status(404).json({ message: 'Due not found' });
+      res.status(404).json({ message: 'Due not found' });
+      return;
     }
 
     res.status(200).json(due);
@@ -39,7 +46,7 @@ export const getDueById = async (req: Request, res: Response) => {
 };
 
 // Create a new due
-export const createDue = async (req: Request, res: Response) => {
+export const createDue = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userId, title, description, amount, type, dueDate, issuedBy } =
       req.body;
@@ -47,15 +54,15 @@ export const createDue = async (req: Request, res: Response) => {
     // Check if user exists
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
 
     // Check if issuer exists and is an admin
     const issuer = await User.findById(issuedBy);
     if (!issuer || issuer.role !== UserRole.ADMIN) {
-      return res
-        .status(400)
-        .json({ message: 'Invalid issuer or not an admin' });
+      res.status(400).json({ message: 'Invalid issuer or not an admin' });
+      return;
     }
 
     // Create new due
@@ -89,23 +96,29 @@ export const createDue = async (req: Request, res: Response) => {
 };
 
 // Update due status
-export const updateDueStatus = async (req: Request, res: Response) => {
+export const updateDueStatus = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
     const { status, paidAmount } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid due ID' });
+      res.status(400).json({ message: 'Invalid due ID' });
+      return;
     }
 
     if (!Object.values(PaymentStatus).includes(status)) {
-      return res.status(400).json({ message: 'Invalid due status' });
+      res.status(400).json({ message: 'Invalid due status' });
+      return;
     }
 
     const due = await Due.findById(id);
 
     if (!due) {
-      return res.status(404).json({ message: 'Due not found' });
+      res.status(404).json({ message: 'Due not found' });
+      return;
     }
 
     // If paid amount is provided, update it
@@ -133,8 +146,11 @@ export const updateDueStatus = async (req: Request, res: Response) => {
       due.status = status;
 
       // If marking as approved (fully paid), ensure paid amount equals total amount
-      if (status === PaymentStatus.APPROVED && due.paidAmount < due.amount) {
-        const remainingAmount = due.amount - due.paidAmount;
+      if (
+        status === PaymentStatus.APPROVED &&
+        (due.paidAmount ?? 0) < due.amount
+      ) {
+        const remainingAmount = due.amount - (due.paidAmount ?? 0);
         due.paidAmount = due.amount;
 
         // Update member's dues owing
@@ -157,12 +173,16 @@ export const updateDueStatus = async (req: Request, res: Response) => {
 };
 
 // Get user's dues
-export const getUserDues = async (req: Request, res: Response) => {
+export const getUserDues = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { userId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: 'Invalid user ID' });
+      res.status(400).json({ message: 'Invalid user ID' });
+      return;
     }
 
     const dues = await Due.find({ userId }).sort({ dueDate: 1 });

@@ -41,3 +41,5 @@ export type DueResponse = Omit<IDue, 'userId' | 'issuedBy'> & {
   createdAt: string;
   dueDate: string;
 };
+
+export { PaymentStatus };
