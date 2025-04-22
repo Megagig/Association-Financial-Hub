@@ -10,6 +10,7 @@ import paymentRoutes from './routes/payment.route';
 import loanRoutes from './routes/loan.route';
 import dueRoutes from './routes/due.route';
 import reportRoutes from './routes/report.route';
+import userSettingRoutes from './routes/userSetting.route';
 
 const app = express();
 // Load environment variables from .env file
@@ -41,6 +42,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/dues', dueRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/user-settings', userSettingRoutes);
 
 // start the server
 app.listen(PORT, () => {
