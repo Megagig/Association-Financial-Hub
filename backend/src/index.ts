@@ -7,7 +7,8 @@ import userRoutes from './routes/users.route';
 import authRoutes from './routes/auth.route';
 import memberRoutes from './routes/member.route';
 import paymentRoutes from './routes/payment.route';
-import loanRoutes from './routes/loan.route'; // Assuming you have a loan route
+import loanRoutes from './routes/loan.route';
+import dueRoutes from './routes/due.route';
 
 const app = express();
 // Load environment variables from .env file
@@ -37,6 +38,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/members', memberRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/loans', loanRoutes);
+app.use('/api/dues', dueRoutes);
 
 // start the server
 app.listen(PORT, () => {

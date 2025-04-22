@@ -2,7 +2,6 @@ export enum UserRole {
   USER = 'user',
   ADMIN = 'admin',
   SUPERADMIN = 'superadmin',
-  default = 'user',
 }
 
 export interface IUser {
