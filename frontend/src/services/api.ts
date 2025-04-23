@@ -1,6 +1,31 @@
 import axios from 'axios';
+import {
+  Member,
+  Payment,
+  Loan,
+  Due,
+  Report,
+  UserSettings,
+  FinancialSummary,
+  PaymentStatus,
+  LoanStatus,
+} from '../types';
 
-const API_URL = 'http://localhost:5000/api';
+import {
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
+  CreatePaymentRequest,
+  UpdatePaymentStatusRequest,
+  LoanApplicationRequest,
+  UpdateLoanStatusRequest,
+  CreateDueRequest,
+  UpdateDueStatusRequest,
+  GenerateReportRequest,
+  UpdateUserSettingsRequest,
+} from './api.types';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 // Create an axios instance
 const api = axios.create({
@@ -11,164 +36,213 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// Add request interceptor to attach JWT token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Add response interceptor to handle common errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Handle unauthorized access - redirect to login or clear credentials
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Auth API
 export const authAPI = {
-  login: async (email: string, password: string) => {
-    const response = await api.post('/auth/login', { email, password });
+  login: async (email: string, password: string): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>('/auth/login', {
+      email,
+      password,
+    });
     return response.data;
   },
-  register: async (userData: any) => {
-    const response = await api.post('/auth/register', userData);
+  register: async (userData: RegisterRequest): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>('/auth/register', userData);
     return response.data;
   },
   getCurrentUser: async () => {
-    const response = await api.get('/auth/me');
+    const response = await api.get<AuthResponse['user']>('/auth/me');
+    return response.data;
+  },
+  logout: async () => {
+    const response = await api.post('/auth/logout');
+    localStorage.removeItem('token');
     return response.data;
   },
 };
 
 // Members API
 export const membersAPI = {
-  getAllMembers: async () => {
-    const response = await api.get('/members');
+  getAllMembers: async (): Promise<Member[]> => {
+    const response = await api.get<Member[]>('/members');
     return response.data;
   },
-  getMemberById: async (id: string) => {
-    const response = await api.get(`/members/${id}`);
+  getMemberById: async (id: string): Promise<Member> => {
+    const response = await api.get<Member>(`/members/${id}`);
     return response.data;
   },
-  getMemberByUserId: async (userId: string) => {
-    const response = await api.get(`/members/user/${userId}`);
+  getMemberByUserId: async (userId: string): Promise<Member> => {
+    const response = await api.get<Member>(`/members/user/${userId}`);
     return response.data;
   },
-  createMember: async (memberData: any) => {
-    const response = await api.post('/members', memberData);
+  createMember: async (memberData: Partial<Member>): Promise<Member> => {
+    const response = await api.post<Member>('/members', memberData);
     return response.data;
   },
-  updateMember: async (id: string, memberData: any) => {
-    const response = await api.put(`/members/${id}`, memberData);
+  updateMember: async (
+    id: string,
+    memberData: Partial<Member>
+  ): Promise<Member> => {
+    const response = await api.put<Member>(`/members/${id}`, memberData);
     return response.data;
   },
-  getMemberPayments: async (id: string) => {
-    const response = await api.get(`/members/${id}/payments`);
+  getMemberPayments: async (id: string): Promise<Payment[]> => {
+    const response = await api.get<Payment[]>(`/members/${id}/payments`);
     return response.data;
   },
-  getMemberLoans: async (id: string) => {
-    const response = await api.get(`/members/${id}/loans`);
+  getMemberLoans: async (id: string): Promise<Loan[]> => {
+    const response = await api.get<Loan[]>(`/members/${id}/loans`);
     return response.data;
   },
-  getFinancialSummary: async () => {
-    const response = await api.get('/members/financial-summary');
+  getFinancialSummary: async (): Promise<FinancialSummary> => {
+    const response = await api.get<FinancialSummary>(
+      '/members/financial-summary'
+    );
     return response.data;
   },
 };
 
 // Payments API
 export const paymentsAPI = {
-  getAllPayments: async () => {
-    const response = await api.get('/payments');
+  getAllPayments: async (): Promise<Payment[]> => {
+    const response = await api.get<Payment[]>('/payments');
     return response.data;
   },
-  getPaymentById: async (id: string) => {
-    const response = await api.get(`/payments/${id}`);
+  getPaymentById: async (id: string): Promise<Payment> => {
+    const response = await api.get<Payment>(`/payments/${id}`);
     return response.data;
   },
-  createPayment: async (paymentData: any) => {
-    const response = await api.post('/payments', paymentData);
+  createPayment: async (
+    paymentData: CreatePaymentRequest
+  ): Promise<Payment> => {
+    const response = await api.post<Payment>('/payments', paymentData);
     return response.data;
   },
-  updatePaymentStatus: async (id: string, status: string) => {
-    const response = await api.put(`/payments/${id}/status`, { status });
+  updatePaymentStatus: async (
+    id: string,
+    status: PaymentStatus
+  ): Promise<Payment> => {
+    const response = await api.put<Payment>(`/payments/${id}/status`, {
+      status,
+    });
     return response.data;
   },
-  getUserPaymentHistory: async (userId: string) => {
-    const response = await api.get(`/payments/user/${userId}`);
+  getUserPaymentHistory: async (userId: string): Promise<Payment[]> => {
+    const response = await api.get<Payment[]>(`/payments/user/${userId}`);
     return response.data;
   },
 };
 
 // Loans API
 export const loansAPI = {
-  getAllLoans: async () => {
-    const response = await api.get('/loans');
+  getAllLoans: async (): Promise<Loan[]> => {
+    const response = await api.get<Loan[]>('/loans');
     return response.data;
   },
-  getLoanById: async (id: string) => {
-    const response = await api.get(`/loans/${id}`);
+  getLoanById: async (id: string): Promise<Loan> => {
+    const response = await api.get<Loan>(`/loans/${id}`);
     return response.data;
   },
-  applyForLoan: async (loanData: any) => {
-    const response = await api.post('/loans/apply', loanData);
+  applyForLoan: async (loanData: LoanApplicationRequest): Promise<Loan> => {
+    const response = await api.post<Loan>('/loans/apply', loanData);
     return response.data;
   },
-  updateLoanStatus: async (id: string, statusData: any) => {
-    const response = await api.put(`/loans/${id}/status`, statusData);
+  updateLoanStatus: async (
+    id: string,
+    statusData: UpdateLoanStatusRequest
+  ): Promise<Loan> => {
+    const response = await api.put<Loan>(`/loans/${id}/status`, statusData);
     return response.data;
   },
-  getUserLoanHistory: async (userId: string) => {
-    const response = await api.get(`/loans/user/${userId}`);
+  getUserLoanHistory: async (userId: string): Promise<Loan[]> => {
+    const response = await api.get<Loan[]>(`/loans/user/${userId}`);
     return response.data;
   },
 };
 
 // Dues API
 export const duesAPI = {
-  getAllDues: async () => {
-    const response = await api.get('/dues');
+  getAllDues: async (): Promise<Due[]> => {
+    const response = await api.get<Due[]>('/dues');
     return response.data;
   },
-  getDueById: async (id: string) => {
-    const response = await api.get(`/dues/${id}`);
+  getDueById: async (id: string): Promise<Due> => {
+    const response = await api.get<Due>(`/dues/${id}`);
     return response.data;
   },
-  createDue: async (dueData: any) => {
-    const response = await api.post('/dues', dueData);
+  createDue: async (dueData: CreateDueRequest): Promise<Due> => {
+    const response = await api.post<Due>('/dues', dueData);
     return response.data;
   },
-  updateDueStatus: async (id: string, statusData: any) => {
-    const response = await api.put(`/dues/${id}/status`, statusData);
+  updateDueStatus: async (
+    id: string,
+    statusData: UpdateDueStatusRequest
+  ): Promise<Due> => {
+    const response = await api.put<Due>(`/dues/${id}/status`, statusData);
     return response.data;
   },
-  getUserDues: async (userId: string) => {
-    const response = await api.get(`/dues/user/${userId}`);
+  getUserDues: async (userId: string): Promise<Due[]> => {
+    const response = await api.get<Due[]>(`/dues/user/${userId}`);
     return response.data;
   },
 };
 
 // Reports API
 export const reportsAPI = {
-  getAllReports: async () => {
-    const response = await api.get('/reports');
+  getAllReports: async (): Promise<Report[]> => {
+    const response = await api.get<Report[]>('/reports');
     return response.data;
   },
-  getReportById: async (id: string) => {
-    const response = await api.get(`/reports/${id}`);
+  getReportById: async (id: string): Promise<Report> => {
+    const response = await api.get<Report>(`/reports/${id}`);
     return response.data;
   },
-  generateReport: async (reportData: any) => {
-    const response = await api.post('/reports', reportData);
+  generateReport: async (
+    reportData: GenerateReportRequest
+  ): Promise<Report> => {
+    const response = await api.post<Report>('/reports', reportData);
     return response.data;
   },
 };
 
 // User settings API
 export const userAPI = {
-  getUsers: async () => {
-    const response = await api.get('/users');
+  getUserSettings: async (userId: string): Promise<UserSettings> => {
+    const response = await api.get<UserSettings>(`/user/${userId}/settings`);
     return response.data;
   },
-
-  updateUserRole: async (userId: string, role: string) => {
-    const response = await api.put(`/users/${userId}/role`, { role });
-    return response.data;
-  },
-
-  getUserSettings: async (userId: string) => {
-    const response = await api.get(`/user/${userId}/settings`);
-    return response.data;
-  },
-  updateUserSettings: async (userId: string, settingsData: any) => {
-    const response = await api.put(`/user/${userId}/settings`, settingsData);
+  updateUserSettings: async (
+    userId: string,
+    settingsData: UpdateUserSettingsRequest
+  ): Promise<UserSettings> => {
+    const response = await api.put<UserSettings>(
+      `/user/${userId}/settings`,
+      settingsData
+    );
     return response.data;
   },
 };

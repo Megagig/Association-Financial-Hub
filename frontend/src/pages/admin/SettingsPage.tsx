@@ -21,7 +21,7 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import { UserSettings, UserRole } from '@/types';
 import { Bell, Lock, User, LogOut, CreditCard } from 'lucide-react';
-import { mockUserSettings } from '@/lib/mockData';
+
 import { useState, useEffect } from 'react';
 
 export default function SettingsPage() {
