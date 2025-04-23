@@ -153,6 +153,16 @@ export const reportsAPI = {
 
 // User settings API
 export const userAPI = {
+  getUsers: async () => {
+    const response = await api.get('/users');
+    return response.data;
+  },
+
+  updateUserRole: async (userId: string, role: string) => {
+    const response = await api.put(`/users/${userId}/role`, { role });
+    return response.data;
+  },
+
   getUserSettings: async (userId: string) => {
     const response = await api.get(`/user/${userId}/settings`);
     return response.data;

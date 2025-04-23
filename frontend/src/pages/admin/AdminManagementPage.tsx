@@ -25,8 +25,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Shield, ShieldAlert, UserCog } from 'lucide-react';
-// Import the API service
-import { userApi } from '@/services/api';
+import userApi from '@/services/api';
 
 export default function AdminManagementPage() {
   const { user } = useAuth();
@@ -80,26 +79,6 @@ export default function AdminManagementPage() {
   useEffect(() => {
     fetchUsers();
   }, []);
-
-  // if (!isAdmin && user?.role !== 'superadmin') {
-  //   return (
-  //     <div className="flex items-center justify-center h-full">
-  //       <Card className="w-full max-w-md">
-  //         <CardHeader>
-  //           <CardTitle>Access Restricted</CardTitle>
-  //           <CardDescription>
-  //             You don't have permission to access this page.
-  //           </CardDescription>
-  //         </CardHeader>
-  //         <CardContent>
-  //           <p>This page is only available to administrators.</p>
-  //         </CardContent>
-  //       </Card>
-  //     </div>
-  //   );
-  // }
-
-  // Replace the existing check:
   if (user?.role !== 'superadmin') {
     return (
       <div className="flex items-center justify-center h-full">
