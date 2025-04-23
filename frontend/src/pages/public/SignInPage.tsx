@@ -21,10 +21,11 @@ export default function SignInPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-blue-bright">
-            Alumni Financial Hub
+            Savio 96 Alumni Financial Hub
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Manage your alumni membership, dues, and financial services
+            Welcome back! Please sign in to your account. Manage your alumni
+            membership, dues, and financial services
           </p>
         </div>
         <LoginForm />
