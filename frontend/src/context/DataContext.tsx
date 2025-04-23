@@ -6,7 +6,6 @@ import {
   ReactNode,
 } from 'react';
 import {
-  User,
   Payment,
   Loan,
   Due,
@@ -14,10 +13,8 @@ import {
   FinancialSummary,
   Report,
   UserSettings,
-  UserRole,
   PaymentStatus,
   LoanStatus,
-  DueType,
 } from '../types';
 
 import { useToast } from '../components/ui/use-toast';
