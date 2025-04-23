@@ -151,6 +151,18 @@ export const reportsAPI = {
   },
 };
 
+// User settings API
+export const userAPI = {
+  getUserSettings: async (userId: string) => {
+    const response = await api.get(`/user/${userId}/settings`);
+    return response.data;
+  },
+  updateUserSettings: async (userId: string, settingsData: any) => {
+    const response = await api.put(`/user/${userId}/settings`, settingsData);
+    return response.data;
+  },
+};
+
 // Export all APIs
 export default {
   auth: authAPI,
