@@ -8,21 +8,8 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
-
-// Add a request interceptor to add auth token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
 
 // Auth API
 export const authAPI = {
@@ -172,4 +159,5 @@ export default {
   loans: loansAPI,
   dues: duesAPI,
   reports: reportsAPI,
+  user: userAPI,
 };
