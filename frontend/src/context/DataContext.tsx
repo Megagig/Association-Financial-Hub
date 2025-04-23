@@ -6,12 +6,15 @@ import {
   ReactNode,
 } from 'react';
 import {
+  // User,
   Payment,
   Loan,
   Due,
   Member,
   FinancialSummary,
   Report,
+  // UserRole,
+  // DueType,
   UserSettings,
   PaymentStatus,
   LoanStatus,
@@ -28,6 +31,14 @@ import {
   reportsAPI,
   userAPI,
 } from '../services/api';
+import { handleApiError } from '../libs/errorHandling';
+import {
+  CreatePaymentRequest,
+  LoanApplicationRequest,
+  CreateDueRequest,
+  GenerateReportRequest,
+  UpdateUserSettingsRequest,
+} from '../services/api.types';
 
 interface DataContextType {
   members: Member[];
@@ -38,14 +49,14 @@ interface DataContextType {
   reports: Report[];
   userSettings: UserSettings | null;
   isLoading: boolean;
-  addPayment: (payment: Partial<Payment>) => Promise<void>;
+  addPayment: (payment: CreatePaymentRequest) => Promise<void>;
   updatePaymentStatus: (id: string, status: PaymentStatus) => Promise<void>;
-  addLoan: (loan: Partial<Loan>) => Promise<void>;
+  addLoan: (loan: LoanApplicationRequest) => Promise<void>;
   updateLoanStatus: (id: string, status: LoanStatus) => Promise<void>;
-  addDue: (due: Partial<Due>) => Promise<void>;
+  addDue: (due: CreateDueRequest) => Promise<void>;
   updateDueStatus: (id: string, status: PaymentStatus) => Promise<void>;
-  addReport: (report: Partial<Report>) => Promise<void>;
-  updateUserSettings: (settings: Partial<UserSettings>) => Promise<void>;
+  addReport: (report: GenerateReportRequest) => Promise<void>;
+  updateUserSettings: (settings: UpdateUserSettingsRequest) => Promise<void>;
   getMemberById: (userId: string) => Member | undefined;
   getMemberPayments: (userId: string) => Promise<Payment[]>;
   getMemberLoans: (userId: string) => Promise<Loan[]>;
@@ -54,6 +65,7 @@ interface DataContextType {
     amount: number;
     purpose: string;
   }) => Promise<void>;
+  refreshData: () => Promise<void>;
 }
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
@@ -74,54 +86,54 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const refreshData = async () => {
+    if (!user?.id) return;
+
+    setIsLoading(true);
+    try {
+      // Fetch all data in parallel for better performance
+      const [
+        membersData,
+        paymentsData,
+        loansData,
+        duesData,
+        financialSummaryData,
+        reportsData,
+        userSettingsData,
+      ] = await Promise.all([
+        membersAPI.getAllMembers(),
+        paymentsAPI.getAllPayments(),
+        loansAPI.getAllLoans(),
+        duesAPI.getAllDues(),
+        membersAPI.getFinancialSummary(),
+        reportsAPI.getAllReports(),
+        userAPI.getUserSettings(user.id),
+      ]);
+
+      setMembers(membersData);
+      setPayments(paymentsData);
+      setLoans(loansData);
+      setDues(duesData);
+      setFinancialSummary(financialSummaryData);
+      setReports(reportsData);
+      setUserSettings(userSettingsData);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: handleApiError(error),
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      if (!user?.id) return;
+    refreshData();
+  }, [user]);
 
-      setIsLoading(true);
-      try {
-        // Fetch all data in parallel for better performance
-        const [
-          membersData,
-          paymentsData,
-          loansData,
-          duesData,
-          financialSummaryData,
-          reportsData,
-          userSettingsData,
-        ] = await Promise.all([
-          membersAPI.getAllMembers(),
-          paymentsAPI.getAllPayments(),
-          loansAPI.getAllLoans(),
-          duesAPI.getAllDues(),
-          membersAPI.getFinancialSummary(),
-          reportsAPI.getAllReports(),
-          userAPI.getUserSettings(user.id),
-        ]);
-
-        setMembers(membersData);
-        setPayments(paymentsData);
-        setLoans(loansData);
-        setDues(duesData);
-        setFinancialSummary(financialSummaryData);
-        setReports(reportsData);
-        setUserSettings(userSettingsData);
-      } catch (error) {
-        console.error('Error loading data:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to load data. Please try again later.',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadData();
-  }, [user, toast]);
-
-  const addPayment = async (paymentData: Partial<Payment>) => {
+  const addPayment = async (paymentData: CreatePaymentRequest) => {
     try {
       const newPayment = await paymentsAPI.createPayment(paymentData);
 
@@ -136,18 +148,18 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to add payment. Please try again.',
+        description: handleApiError(error),
       });
     }
   };
 
   const updatePaymentStatus = async (id: string, status: PaymentStatus) => {
     try {
-      await paymentsAPI.updatePaymentStatus(id, status);
+      const updatedPayment = await paymentsAPI.updatePaymentStatus(id, status);
 
       setPayments((prevPayments) =>
         prevPayments.map((payment) =>
-          payment.id === id ? { ...payment, status } : payment
+          payment.id === id ? updatedPayment : payment
         )
       );
 
@@ -160,12 +172,12 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to update payment status. Please try again.',
+        description: handleApiError(error),
       });
     }
   };
 
-  const addLoan = async (loanData: Partial<Loan>) => {
+  const addLoan = async (loanData: LoanApplicationRequest) => {
     try {
       const newLoan = await loansAPI.applyForLoan(loanData);
 
@@ -180,17 +192,17 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to add loan. Please try again.',
+        description: handleApiError(error),
       });
     }
   };
 
   const updateLoanStatus = async (id: string, status: LoanStatus) => {
     try {
-      await loansAPI.updateLoanStatus(id, { status });
+      const updatedLoan = await loansAPI.updateLoanStatus(id, { status });
 
       setLoans((prevLoans) =>
-        prevLoans.map((loan) => (loan.id === id ? { ...loan, status } : loan))
+        prevLoans.map((loan) => (loan.id === id ? updatedLoan : loan))
       );
 
       toast({
@@ -202,12 +214,12 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to update loan status. Please try again.',
+        description: handleApiError(error),
       });
     }
   };
 
-  const addDue = async (dueData: Partial<Due>) => {
+  const addDue = async (dueData: CreateDueRequest) => {
     try {
       const newDue = await duesAPI.createDue(dueData);
 
@@ -222,17 +234,17 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to add due. Please try again.',
+        description: handleApiError(error),
       });
     }
   };
 
   const updateDueStatus = async (id: string, status: PaymentStatus) => {
     try {
-      await duesAPI.updateDueStatus(id, { status });
+      const updatedDue = await duesAPI.updateDueStatus(id, { status });
 
       setDues((prevDues) =>
-        prevDues.map((due) => (due.id === id ? { ...due, status } : due))
+        prevDues.map((due) => (due.id === id ? updatedDue : due))
       );
 
       toast({
@@ -244,12 +256,12 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to update due status. Please try again.',
+        description: handleApiError(error),
       });
     }
   };
 
-  const addReport = async (reportData: Partial<Report>) => {
+  const addReport = async (reportData: GenerateReportRequest) => {
     try {
       const newReport = await reportsAPI.generateReport(reportData);
 
@@ -264,12 +276,12 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to add report. Please try again.',
+        description: handleApiError(error),
       });
     }
   };
 
-  const updateUserSettings = async (settings: Partial<UserSettings>) => {
+  const updateUserSettings = async (settings: UpdateUserSettingsRequest) => {
     if (!user?.id) return;
 
     try {
@@ -289,7 +301,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to update user settings. Please try again.',
+        description: handleApiError(error),
       });
     }
   };
@@ -306,7 +318,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to fetch member payments. Please try again.',
+        description: handleApiError(error),
       });
       return [];
     }
@@ -320,7 +332,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to fetch member loans. Please try again.',
+        description: handleApiError(error),
       });
       return [];
     }
@@ -353,7 +365,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to submit loan application. Please try again.',
+        description: handleApiError(error),
       });
     }
   };
@@ -379,6 +391,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     getMemberPayments,
     getMemberLoans,
     applyForLoan,
+    refreshData,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
