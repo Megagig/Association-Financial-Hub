@@ -8,15 +8,12 @@ import {
   UserSettings,
   FinancialSummary,
   PaymentStatus,
-  LoanStatus,
 } from '../types';
 
 import {
-  LoginRequest,
   RegisterRequest,
   AuthResponse,
   CreatePaymentRequest,
-  UpdatePaymentStatusRequest,
   LoanApplicationRequest,
   UpdateLoanStatusRequest,
   CreateDueRequest,
