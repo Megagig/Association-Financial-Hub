@@ -31,7 +31,7 @@ import {
   reportsAPI,
   userAPI,
 } from '../services/api';
-import { handleApiError } from '../libs/errorHandling';
+
 import {
   CreatePaymentRequest,
   LoanApplicationRequest,
@@ -39,6 +39,7 @@ import {
   GenerateReportRequest,
   UpdateUserSettingsRequest,
 } from '../services/api.types';
+import { handleApiError } from '../lib/errorHandling';
 
 interface DataContextType {
   members: Member[];

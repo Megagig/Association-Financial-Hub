@@ -2,7 +2,7 @@
 
 // API base URL - fallback to localhost if not defined in env variables
 export const API_BASE_URL =
-  process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 // Request timeout in milliseconds (15 seconds)
 export const API_TIMEOUT = 15000;
