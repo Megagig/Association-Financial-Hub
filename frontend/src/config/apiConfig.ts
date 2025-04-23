@@ -1,8 +1,7 @@
-// src/config/apiConfig.ts
+// Modified apiConfig.ts - Ensuring consistency in endpoints
 
-// API base URL - fallback to localhost if not defined in env variables
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
 // Request timeout in milliseconds (15 seconds)
 export const API_TIMEOUT = 15000;
@@ -13,7 +12,7 @@ export const INCLUDE_CREDENTIALS = true;
 // Token storage key in localStorage
 export const TOKEN_STORAGE_KEY = 'auth_token';
 
-// API endpoints
+// API endpoints - Ensuring consistency between client and server
 export const ENDPOINTS = {
   // Auth endpoints
   AUTH: {
@@ -23,49 +22,49 @@ export const ENDPOINTS = {
     LOGOUT: '/auth/logout',
   },
 
-  // Member endpoints
+  // Member endpoints - Making sure these match your backend routes
   MEMBERS: {
-    BASE: '/members',
-    DETAIL: (id: string) => `/members/${id}`,
-    BY_USER: (userId: string) => `/members/user/${userId}`,
-    PAYMENTS: (id: string) => `/members/${id}/payments`,
-    LOANS: (id: string) => `/members/${id}/loans`,
-    FINANCIAL_SUMMARY: '/members/financial-summary',
+    BASE: '/api/members', // This should match where you mount your router in Express
+    DETAIL: (id: string) => `/api/members/${id}`,
+    BY_USER: (userId: string) => `/api/members/user/${userId}`,
+    PAYMENTS: (id: string) => `/api/members/${id}/payments`,
+    LOANS: (id: string) => `/api/members/${id}/loans`,
+    FINANCIAL_SUMMARY: '/api/members/financial-summary',
   },
 
-  // Payment endpoints
+  // Payment endpoints - Ensuring consistency with prefixes
   PAYMENTS: {
-    BASE: '/payments',
-    DETAIL: (id: string) => `/payments/${id}`,
-    UPDATE_STATUS: (id: string) => `/payments/${id}/status`,
-    USER_HISTORY: (userId: string) => `/payments/user/${userId}`,
+    BASE: '/api/payments', // Added /api prefix for consistency
+    DETAIL: (id: string) => `/api/payments/${id}`,
+    UPDATE_STATUS: (id: string) => `/api/payments/${id}/status`,
+    USER_HISTORY: (userId: string) => `/api/payments/user/${userId}`,
   },
 
-  // Loan endpoints
+  // Loan endpoints - Ensuring consistency with prefixes
   LOANS: {
-    BASE: '/loans',
-    DETAIL: (id: string) => `/loans/${id}`,
-    APPLY: '/loans/apply',
-    UPDATE_STATUS: (id: string) => `/loans/${id}/status`,
-    USER_HISTORY: (userId: string) => `/loans/user/${userId}`,
+    BASE: '/api/loans', // Added /api prefix for consistency
+    DETAIL: (id: string) => `/api/loans/${id}`,
+    APPLY: '/api/loans/apply',
+    UPDATE_STATUS: (id: string) => `/api/loans/${id}/status`,
+    USER_HISTORY: (userId: string) => `/api/loans/user/${userId}`,
   },
 
-  // Dues endpoints
+  // Dues endpoints - Ensuring consistency with prefixes
   DUES: {
-    BASE: '/dues',
-    DETAIL: (id: string) => `/dues/${id}`,
-    UPDATE_STATUS: (id: string) => `/dues/${id}/status`,
-    USER_DUES: (userId: string) => `/dues/user/${userId}`,
+    BASE: '/api/dues', // Added /api prefix for consistency
+    DETAIL: (id: string) => `/api/dues/${id}`,
+    UPDATE_STATUS: (id: string) => `/api/dues/${id}/status`,
+    USER_DUES: (userId: string) => `/api/dues/user/${userId}`,
   },
 
-  // Report endpoints
+  // Report endpoints - Ensuring consistency with prefixes
   REPORTS: {
-    BASE: '/reports',
-    DETAIL: (id: string) => `/reports/${id}`,
+    BASE: '/api/reports', // Added /api prefix for consistency
+    DETAIL: (id: string) => `/api/reports/${id}`,
   },
 
-  // User settings endpoints
+  // User settings endpoints - Ensuring consistency with prefixes
   USER: {
-    SETTINGS: (userId: string) => `/user/${userId}/settings`,
+    SETTINGS: (userId: string) => `/api/user/${userId}/settings`, // Added /api prefix for consistency
   },
 };

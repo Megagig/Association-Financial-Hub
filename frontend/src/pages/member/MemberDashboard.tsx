@@ -26,14 +26,18 @@ export default function MemberDashboard() {
   }
 
   const member = getMemberById(user.id);
-  const payments = getMemberPayments(user.id);
-  const loans = getMemberLoans(user.id);
+  // Ensure payments and loans are arrays with null checks
+  const payments = Array.isArray(getMemberPayments(user.id))
+    ? getMemberPayments(user.id)
+    : [];
+  const loans = Array.isArray(getMemberLoans(user.id))
+    ? getMemberLoans(user.id)
+    : [];
 
-  // Get recent payments
+  // Get recent payments with safe array operations
   const recentPayments = [...payments]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 5);
-
   // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -43,6 +47,15 @@ export default function MemberDashboard() {
       maximumFractionDigits: 0,
     }).format(amount);
   };
+
+  // Add null check for member
+  if (!member) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-lg text-muted-foreground">Member data not found</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

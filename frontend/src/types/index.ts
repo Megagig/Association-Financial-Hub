@@ -73,16 +73,16 @@ export enum DueType {
   OTHER = 'other',
 }
 
-// export interface User {
-//   id: string;
-//   name: string;
-//   email: string;
-//   role: UserRole;
-//   avatar?: string;
-//   memberSince: string;
-//   membershipId: string;
-// }
-
+export interface FinancialSummary {
+  totalMembers: number;
+  totalDuesCollected: number;
+  totalDonations: number;
+  totalLoansDisbursed: number;
+  totalDuesPending: number;
+  totalPledges: number;
+  totalLoansRepaid: number;
+  pendingLoanApplications: number;
+}
 export interface Payment {
   id: string;
   userId: string;

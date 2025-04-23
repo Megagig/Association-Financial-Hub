@@ -46,11 +46,21 @@ export default function MembersPage() {
   }
 
   // Filter members based on search query
-  const filteredMembers = members.filter(
-    (member) =>
-      member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // const filteredMembers = members.filter(
+  //   (member) =>
+  //     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     member.email.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
+  const filteredMembers = Array.isArray(members)
+    ? members.filter((member) => {
+        // Add null checks for member properties
+        const name = member?.name?.toLowerCase() || '';
+        const email = member?.email?.toLowerCase() || '';
+        const searchLower = searchQuery.toLowerCase();
+
+        return name.includes(searchLower) || email.includes(searchLower);
+      })
+    : [];
 
   // Handle manage member
   const handleManageMember = (memberId: string) => {

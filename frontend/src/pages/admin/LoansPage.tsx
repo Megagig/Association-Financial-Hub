@@ -1,5 +1,6 @@
 import { useAuth } from '@/context/AuthContext';
 import { useData } from '@/context/DataContext';
+import { Loan, LoanStatus } from '@/types';
 import { StatusBadge } from '@/components/Dashboard/StatusBadge';
 import {
   Card,
@@ -36,7 +37,6 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useState } from 'react';
-import { LoanStatus } from '@/types';
 
 export default function LoansPage() {
   const { user, isAdmin } = useAuth();
@@ -132,17 +132,32 @@ export default function LoansPage() {
   };
 
   // Filter loans based on search term
-  const filteredLoans = loans.filter((loan) => {
-    const member = getMemberById(loan.userId);
-    if (!member) return false;
+  const filteredLoans = Array.isArray(loans)
+    ? loans.filter((loan) => {
+        const member = getMemberById(loan?.userId);
+        if (!member) return false;
 
-    const searchLowerCase = searchTerm.toLowerCase();
+        const searchLowerCase = searchTerm.toLowerCase();
+        return (
+          member.name?.toLowerCase().includes(searchLowerCase) ||
+          member.membershipId?.toLowerCase().includes(searchLowerCase) ||
+          loan.purpose?.toLowerCase().includes(searchLowerCase)
+        );
+      })
+    : [];
+
+  // Add early return for no loans
+  if (!Array.isArray(loans)) {
     return (
-      member.name.toLowerCase().includes(searchLowerCase) ||
-      member.membershipId.toLowerCase().includes(searchLowerCase) ||
-      loan.purpose.toLowerCase().includes(searchLowerCase)
+      <div className="text-center py-10">
+        <FileText className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-medium">No Loans Available</h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          There seems to be an issue loading the loans data.
+        </p>
+      </div>
     );
-  });
+  }
 
   return (
     <div className="space-y-6">

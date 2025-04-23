@@ -7,15 +7,13 @@ import {
   Report,
   UserSettings,
   PaymentStatus,
-  LoanStatus,
+  FinancialSummary,
 } from '../types';
 
 import {
-  LoginRequest,
   RegisterRequest,
   AuthResponse,
   CreatePaymentRequest,
-  UpdatePaymentStatusRequest,
   LoanApplicationRequest,
   UpdateLoanStatusRequest,
   CreateDueRequest,
@@ -58,6 +56,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error('API Error:', error);
+
     if (error.response?.status === 401) {
       // Handle unauthorized access - redirect to login or clear credentials
       localStorage.removeItem(TOKEN_STORAGE_KEY);
@@ -110,8 +110,17 @@ export const authAPI = {
 // Members API
 export const membersAPI = {
   getAllMembers: async (): Promise<Member[]> => {
-    const response = await api.get<Member[]>(ENDPOINTS.MEMBERS.BASE);
-    return response.data;
+    try {
+      const response = await api.get<{
+        success: boolean;
+        data: Member[];
+        pagination: any;
+      }>(ENDPOINTS.MEMBERS.BASE);
+      return response.data.data; // Return the data array from the response
+    } catch (error) {
+      console.error('Error fetching members:', error);
+      throw error;
+    }
   },
   getMemberById: async (id: string): Promise<Member> => {
     const response = await api.get<Member>(ENDPOINTS.MEMBERS.DETAIL(id));

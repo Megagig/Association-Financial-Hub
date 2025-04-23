@@ -13,8 +13,6 @@ import {
   Member,
   FinancialSummary,
   Report,
-  // UserRole,
-  // DueType,
   UserSettings,
   PaymentStatus,
   LoanStatus,
@@ -70,13 +68,22 @@ interface DataContextType {
 }
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
+export const useData = () => {
+  const context = useContext(DataContext);
+  if (!context) {
+    throw new Error('useData must be used within a DataProvider');
+  }
+  return context;
+};
+
 interface DataProviderProps {
   children: ReactNode;
 }
 
 export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+
   const [members, setMembers] = useState<Member[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -87,39 +94,171 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Combine refreshData and loadDashboardData into one function
+  // const refreshData = async () => {
+  //   if (!user?.id) {
+  //     console.log('No user ID found, skipping data refresh');
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+  //   try {
+  //     const [
+  //       membersData,
+  //       paymentsData,
+  //       loansData,
+  //       duesData,
+  //       financialSummaryData,
+  //       reportsData,
+  //       userSettingsData,
+  //     ] = await Promise.all([
+  //       membersAPI.getAllMembers(),
+  //       paymentsAPI.getAllPayments(),
+  //       loansAPI.getAllLoans(),
+  //       duesAPI.getAllDues(),
+  //       membersAPI.getFinancialSummary(),
+  //       reportsAPI.getAllReports(),
+  //       userAPI.getUserSettings(user.id),
+  //     ]);
+
+  //     setMembers(membersData);
+  //     setPayments(paymentsData);
+  //     setLoans(loansData);
+  //     setDues(duesData);
+  //     setFinancialSummary(financialSummaryData);
+  //     setReports(reportsData);
+  //     setUserSettings(userSettingsData);
+  //   } catch (error) {
+  //     console.error('Error loading data:', error);
+  //     toast({
+  //       variant: 'destructive',
+  //       title: 'Error',
+  //       description: handleApiError(error),
+  //     });
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  // Modified refreshData with better logging and error handling
   const refreshData = async () => {
-    if (!user?.id) return;
+    console.log('RefreshData called with user:', user);
+
+    // Skip if auth is still loading
+    if (authLoading) {
+      console.log('Auth still loading, waiting before refreshing data');
+      return;
+    }
+
+    // Check for valid user
+    if (!user) {
+      console.log('No user found, skipping data refresh');
+      setIsLoading(false);
+      return;
+    }
+
+    // Handle both id and _id possible formats
+    const userId = user.id || user._id;
+
+    if (!userId) {
+      console.log('User object is missing ID property:', user);
+      setIsLoading(false);
+      return;
+    }
+
+    console.log(
+      `Starting data refresh for user ${userId} with role ${user.role}`
+    );
 
     setIsLoading(true);
-    try {
-      // Fetch all data in parallel for better performance
-      const [
-        membersData,
-        paymentsData,
-        loansData,
-        duesData,
-        financialSummaryData,
-        reportsData,
-        userSettingsData,
-      ] = await Promise.all([
-        membersAPI.getAllMembers(),
-        paymentsAPI.getAllPayments(),
-        loansAPI.getAllLoans(),
-        duesAPI.getAllDues(),
-        membersAPI.getFinancialSummary(),
-        reportsAPI.getAllReports(),
-        userAPI.getUserSettings(user.id),
-      ]);
 
-      setMembers(membersData);
-      setPayments(paymentsData);
-      setLoans(loansData);
-      setDues(duesData);
-      setFinancialSummary(financialSummaryData);
-      setReports(reportsData);
-      setUserSettings(userSettingsData);
+    try {
+      // Load members first
+      try {
+        console.log('Fetching members data...');
+        const membersData = await membersAPI.getAllMembers();
+        console.log(`Retrieved ${membersData.length} members`);
+        setMembers(membersData);
+      } catch (memberError) {
+        console.error('Error fetching members:', memberError);
+        toast({
+          variant: 'destructive',
+          title: 'Error Fetching Members',
+          description: handleApiError(memberError),
+        });
+      }
+
+      try {
+        setIsLoading(true);
+        const loansData = await loansAPI.getAllLoans();
+        setLoans(loansData || []); // Ensure we always set an array
+      } catch (error) {
+        console.error('Error loading loans:', error);
+        setLoans([]); // Set empty array on error
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to load loans data',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+
+      // Load other data in parallel
+      try {
+        console.log('Fetching other data...');
+        const [
+          paymentsData,
+          loansData,
+          duesData,
+          financialSummaryData,
+          reportsData,
+          userSettingsData,
+        ] = await Promise.all([
+          paymentsAPI.getAllPayments(),
+          loansAPI.getAllLoans(),
+          duesAPI.getAllDues(),
+          membersAPI.getFinancialSummary().catch((e) => {
+            console.error('Failed to fetch financial summary:', e);
+            return null;
+          }),
+          reportsAPI.getAllReports().catch((e) => {
+            console.error('Failed to fetch reports:', e);
+            return [];
+          }),
+          userAPI.getUserSettings(userId).catch((e) => {
+            console.error('Failed to fetch user settings:', e);
+            return null;
+          }),
+        ]);
+
+        setPayments(paymentsData);
+        setLoans(loansData);
+        setDues(duesData);
+
+        if (financialSummaryData) {
+          setFinancialSummary(financialSummaryData);
+        }
+
+        if (reportsData) {
+          setReports(reportsData);
+        }
+
+        if (userSettingsData) {
+          setUserSettings(userSettingsData);
+        }
+
+        console.log('All data loaded successfully');
+      } catch (otherDataError) {
+        console.error('Error fetching supplementary data:', otherDataError);
+        toast({
+          variant: 'destructive',
+          title: 'Error Loading Data',
+          description: handleApiError(otherDataError),
+        });
+      }
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('General error in refreshData:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -129,51 +268,15 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
-    refreshData();
-  }, [user]);
-
-   const [financialSummary, setFinancialSummary] = useState<FinancialSummary | null>(null);
-  const { user } = useAuth();
-  const { toast } = useToast();
-
-  const loadDashboardData = async () => {
-    try {
-      const [
-        membersData,
-        paymentsData,
-        loansData,
-        financialSummaryData
-      ] = await Promise.all([
-        membersAPI.getAllMembers(),
-        paymentsAPI.getAllPayments(),
-        loansAPI.getAllLoans(),
-        membersAPI.getFinancialSummary()
-      ]);
-
-      setMembers(membersData);
-      setPayments(paymentsData);
-      setLoans(loansData);
-      setFinancialSummary(financialSummaryData);
-      
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: handleApiError(error)
-      });
+    if (!authLoading && user) {
+      console.log('Auth loaded, user present - refreshing data');
+      refreshData();
+    } else if (!authLoading) {
+      console.log('Auth loaded but no user present');
+      setIsLoading(false);
     }
-  };
-
-  // Load data when user is authenticated
-  useEffect(() => {
-    if (user) {
-      loadDashboardData();
-    }
-  }, [user]);
-};
-
+  }, [user, authLoading]);
   const addPayment = async (paymentData: CreatePaymentRequest) => {
     try {
       const newPayment = await paymentsAPI.createPayment(paymentData);
@@ -436,12 +539,4 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
-};
-
-export const useData = () => {
-  const context = useContext(DataContext);
-  if (!context) {
-    throw new Error('useData must be used within a DataProvider');
-  }
-  return context;
 };
