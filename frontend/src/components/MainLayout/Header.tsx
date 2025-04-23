@@ -23,12 +23,12 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-purple-600 shadow-lg">
+    <header className="bg-blue-600 shadow-lg">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="text-white text-xl font-bold">
-              Association Hub
+              Savio 96 Alumni Financial Hub
             </Link>
           </div>
           <div className="flex items-center space-x-4">

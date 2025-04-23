@@ -1,6 +1,5 @@
 import Header from '@/components/MainLayout/Header';
-import Footer from '@/components/MainLayout/Footer';
-// import Hero from '../components/Hero';
+import { Footer } from '@/components/MainLayout/Footer';
 import { Outlet } from 'react-router-dom';
 
 const MainLayout: React.FC = () => {
