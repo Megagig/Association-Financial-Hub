@@ -134,6 +134,46 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     refreshData();
   }, [user]);
 
+   const [financialSummary, setFinancialSummary] = useState<FinancialSummary | null>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const loadDashboardData = async () => {
+    try {
+      const [
+        membersData,
+        paymentsData,
+        loansData,
+        financialSummaryData
+      ] = await Promise.all([
+        membersAPI.getAllMembers(),
+        paymentsAPI.getAllPayments(),
+        loansAPI.getAllLoans(),
+        membersAPI.getFinancialSummary()
+      ]);
+
+      setMembers(membersData);
+      setPayments(paymentsData);
+      setLoans(loansData);
+      setFinancialSummary(financialSummaryData);
+      
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: handleApiError(error)
+      });
+    }
+  };
+
+  // Load data when user is authenticated
+  useEffect(() => {
+    if (user) {
+      loadDashboardData();
+    }
+  }, [user]);
+};
+
   const addPayment = async (paymentData: CreatePaymentRequest) => {
     try {
       const newPayment = await paymentsAPI.createPayment(paymentData);
