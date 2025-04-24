@@ -4,7 +4,9 @@
   "description": "An online portal for clubs, and alumni or association to track members financial status",
   "main": "./src/index.ts",
   "scripts": {
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "author": "Obi Anthony Uchenna",
   "license": "MIT",
