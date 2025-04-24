@@ -35,6 +35,11 @@ app.use(
   })
 );
 
+// root route
+app.get('/', (req, res) => {
+  res.send('API is running successfully');
+});
+
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
