@@ -46,9 +46,14 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     // Set HTTP cookie with token
     res.cookie('auth_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'none',
       maxAge: 86400000, // 1 day in milliseconds
+      path: '/',
+      domain:
+        process.env.NODE_ENV === 'production'
+          ? '.vercel.app' // Allow sharing between subdomains
+          : 'localhost',
     });
 
     // Remove password from user object before sending
