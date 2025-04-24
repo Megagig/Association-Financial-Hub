@@ -28,25 +28,25 @@ app.use(cookieParser());
 
 // Enable CORS for the frontend URL
 // This allows the frontend to make requests to the backend
-// app.use(
-//   cors({
-//     origin: process.env.FRONTEND_URL,
-//     credentials: true,
-//   })
-// );
-
 app.use(
   cors({
-    origin: [
-      'https://savio-96-financial-hub.vercel.app',
-      'http://localhost:5173', // development URL
-    ],
+    origin: process.env.FRONTEND_URL,
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['set-cookie'],
   })
 );
+
+// app.use(
+//   cors({
+//     origin: [
+//       'https://savio-96-financial-hub.vercel.app',
+//       'http://localhost:5173', // development URL
+//     ],
+//     credentials: true,
+//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+//     allowedHeaders: ['Content-Type', 'Authorization'],
+//     exposedHeaders: ['set-cookie'],
+//   })
+// );
 
 app.set('trust proxy', 1); // trust first proxy for secure cookies
 
