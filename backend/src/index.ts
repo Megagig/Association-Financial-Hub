@@ -30,7 +30,7 @@ app.use(cookieParser());
 // This allows the frontend to make requests to the backend
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     credentials: true,
   })
 );
