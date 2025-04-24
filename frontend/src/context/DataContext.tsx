@@ -6,7 +6,6 @@ import {
   ReactNode,
 } from 'react';
 import {
-  // User,
   Payment,
   Loan,
   Due,
@@ -16,6 +15,7 @@ import {
   UserSettings,
   PaymentStatus,
   LoanStatus,
+  Admin,
 } from '../types';
 
 import { useToast } from '../components/ui/use-toast';
@@ -36,10 +36,12 @@ import {
   CreateDueRequest,
   GenerateReportRequest,
   UpdateUserSettingsRequest,
+  ApiError,
 } from '../services/api.types';
 import { handleApiError } from '../lib/errorHandling';
 
 interface DataContextType {
+  //State types
   members: Member[];
   payments: Payment[];
   loans: Loan[];
@@ -48,6 +50,8 @@ interface DataContextType {
   reports: Report[];
   userSettings: UserSettings | null;
   isLoading: boolean;
+
+  // Async methods should return Promise<void> or Promise<T>
   addPayment: (payment: CreatePaymentRequest) => Promise<void>;
   updatePaymentStatus: (id: string, status: PaymentStatus) => Promise<void>;
   addLoan: (loan: LoanApplicationRequest) => Promise<void>;
@@ -56,7 +60,14 @@ interface DataContextType {
   updateDueStatus: (id: string, status: PaymentStatus) => Promise<void>;
   addReport: (report: GenerateReportRequest) => Promise<void>;
   updateUserSettings: (settings: UpdateUserSettingsRequest) => Promise<void>;
+  getMemberProfile: (userId: string) => Promise<Member>;
+  updateMemberProfile: (userId: string, data: Partial<Member>) => Promise<void>;
+  getAdminProfile: (userId: string) => Promise<Admin>;
+  updateAdminProfile: (userId: string, data: Partial<Admin>) => Promise<void>;
+
+  // Query methods
   getMemberById: (userId: string) => Member | undefined;
+
   getMemberPayments: (userId: string) => Promise<Payment[]>;
   getMemberLoans: (userId: string) => Promise<Loan[]>;
   applyForLoan: (loanData: {
@@ -66,6 +77,8 @@ interface DataContextType {
   }) => Promise<void>;
   refreshData: () => Promise<void>;
 }
+
+// Create a context with a default value of undefined
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const useData = () => {
@@ -93,52 +106,6 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Combine refreshData and loadDashboardData into one function
-  // const refreshData = async () => {
-  //   if (!user?.id) {
-  //     console.log('No user ID found, skipping data refresh');
-  //     return;
-  //   }
-
-  //   setIsLoading(true);
-  //   try {
-  //     const [
-  //       membersData,
-  //       paymentsData,
-  //       loansData,
-  //       duesData,
-  //       financialSummaryData,
-  //       reportsData,
-  //       userSettingsData,
-  //     ] = await Promise.all([
-  //       membersAPI.getAllMembers(),
-  //       paymentsAPI.getAllPayments(),
-  //       loansAPI.getAllLoans(),
-  //       duesAPI.getAllDues(),
-  //       membersAPI.getFinancialSummary(),
-  //       reportsAPI.getAllReports(),
-  //       userAPI.getUserSettings(user.id),
-  //     ]);
-
-  //     setMembers(membersData);
-  //     setPayments(paymentsData);
-  //     setLoans(loansData);
-  //     setDues(duesData);
-  //     setFinancialSummary(financialSummaryData);
-  //     setReports(reportsData);
-  //     setUserSettings(userSettingsData);
-  //   } catch (error) {
-  //     console.error('Error loading data:', error);
-  //     toast({
-  //       variant: 'destructive',
-  //       title: 'Error',
-  //       description: handleApiError(error),
-  //     });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   // Modified refreshData with better logging and error handling
   const refreshData = async () => {
@@ -277,6 +244,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   }, [user, authLoading]);
+
   const addPayment = async (paymentData: CreatePaymentRequest) => {
     try {
       const newPayment = await paymentsAPI.createPayment(paymentData);
@@ -451,7 +419,10 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   };
 
   const getMemberById = (userId: string): Member | undefined => {
-    return members.find((member) => member.id === userId);
+    if (!userId) return undefined;
+    return members.find(
+      (member) => member.id === userId || member._id === userId
+    );
   };
 
   const getMemberPayments = async (userId: string): Promise<Payment[]> => {
@@ -514,6 +485,54 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     }
   };
 
+  const getMemberProfile = async (userId: string): Promise<Member> => {
+    try {
+      const member = members.find((m) => m.id === userId || m._id === userId);
+      if (!member) throw new Error('Member not found');
+      return member;
+    } catch (error) {
+      console.error('Error fetching member profile:', error);
+      throw error;
+    }
+  };
+
+  const updateMemberProfile = async (
+    userId: string,
+    data: Partial<Member>
+  ): Promise<void> => {
+    try {
+      const response = await membersAPI.updateMember(userId, data);
+      setMembers((prevMembers) =>
+        prevMembers.map((m) => (m.id === userId ? { ...m, ...response } : m))
+      );
+    } catch (error) {
+      console.error('Error updating member profile:', error);
+      throw error;
+    }
+  };
+
+  const getAdminProfile = async (userId: string): Promise<Admin> => {
+    try {
+      const response = await userAPI.getAdminProfile(userId);
+      return response;
+    } catch (error) {
+      console.error('Error fetching admin profile:', error);
+      throw error;
+    }
+  };
+
+  const updateAdminProfile = async (
+    userId: string,
+    data: Partial<Admin>
+  ): Promise<void> => {
+    try {
+      await userAPI.updateAdminProfile(userId, data);
+    } catch (error) {
+      console.error('Error updating admin profile:', error);
+      throw error;
+    }
+  };
+
   const value: DataContextType = {
     members,
     payments,
@@ -536,6 +555,29 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     getMemberLoans,
     applyForLoan,
     refreshData,
+    getMemberProfile: function (userId: string): Promise<Member> {
+      throw new Error('Function not implemented.');
+    },
+    updateMemberProfile: function (
+      userId: string,
+      data: Partial<Member>
+    ): Promise<void> {
+      throw new Error('Function not implemented.');
+    },
+    getAdminProfile: async (userId: string) => {
+      try {
+        return await userAPI.getAdminProfile(userId);
+      } catch (error) {
+        console.error('Error fetching admin profile:', error);
+        throw error;
+      }
+    },
+    updateAdminProfile: function (
+      userId: string,
+      data: Partial<Admin>
+    ): Promise<void> {
+      throw new Error('Function not implemented.');
+    },
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

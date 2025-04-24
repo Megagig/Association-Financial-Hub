@@ -15,34 +15,43 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useEffect, useState } from 'react';
+import { Loan, Member, Payment } from '@/types';
 
 export default function MemberDashboard() {
   const { user } = useAuth();
   const { getMemberById, getMemberPayments, getMemberLoans, isLoading } =
     useData();
+  const [memberData, setMemberData] = useState<Member | null>(null);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [loans, setLoans] = useState<Loan[]>([]);
 
-  if (isLoading || !user) {
-    return <div className="text-center py-10">Loading dashboard data...</div>;
-  }
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user?.id) return;
+      const [member, memberPayments, memberLoans] = await Promise.all([
+        getMemberById(user.id),
+        getMemberPayments(user.id),
+        getMemberLoans(user.id),
+      ]);
+      setMemberData(member || null);
+      setPayments(memberPayments || []);
+      setLoans(memberLoans || []);
+    };
+    fetchData();
+  }, [user?.id, getMemberById, getMemberPayments, getMemberLoans]);
 
-  const member = getMemberById(user.id);
-  // Ensure payments and loans are arrays with null checks
-  const payments = Array.isArray(getMemberPayments(user.id))
-    ? getMemberPayments(user.id)
-    : [];
-  const loans = Array.isArray(getMemberLoans(user.id))
-    ? getMemberLoans(user.id)
-    : [];
-
-  // Get recent payments with safe array operations
+  const member = memberData;
+  // Use state values instead of direct API calls
   const recentPayments = [...payments]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 5);
+
   // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'NGN',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);

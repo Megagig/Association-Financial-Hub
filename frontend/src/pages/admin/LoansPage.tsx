@@ -10,8 +10,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -21,26 +19,23 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import {
   AlertCircle,
-  CircleDollarSign,
-  FileText,
-  Download,
-  Filter,
-  CircleCheck,
+  CheckCircle,
   Clock,
   BanknoteIcon,
   Search,
+  FileText,
+  Download,
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { useState } from 'react';
+import { Label } from '@/components/ui/label';
+import { useState, useEffect } from 'react';
 
 export default function LoansPage() {
-  const { user, isAdmin } = useAuth();
-  const { members, loans, getMemberById, updateLoanStatus, isLoading } =
+  const { user } = useAuth();
+  const { members, loans, updateLoanStatus, isLoading, refreshData } =
     useData();
 
   const { toast } = useToast();
@@ -54,9 +49,27 @@ export default function LoansPage() {
   );
   const [processingNotes, setProcessingNotes] = useState<string>('');
 
+  // Add debug logging
+  console.log('Loans data:', loans);
+  console.log('Is loans an array?', Array.isArray(loans));
+  console.log('Loans length:', Array.isArray(loans) ? loans.length : 'N/A');
+
+  // Force refresh data when component mounts
+  useEffect(() => {
+    refreshData();
+  }, []);
+
   if (isLoading || !user) {
     return <div className="text-center py-10">Loading loans data...</div>;
   }
+
+  // Function to get member by ID directly from members array
+  const getMemberById = (userId: string) => {
+    if (!userId) return undefined;
+    return members.find(
+      (member) => member.id === userId || member._id === userId
+    );
+  };
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -79,7 +92,7 @@ export default function LoansPage() {
   const getStatusIcon = (status: LoanStatus) => {
     switch (status) {
       case LoanStatus.APPROVED:
-        return <CircleCheck className="h-4 w-4 text-success" />;
+        return <CheckCircle className="h-4 w-4 text-success" />;
       case LoanStatus.PENDING:
         return <Clock className="h-4 w-4 text-warning" />;
       case LoanStatus.REJECTED:
@@ -131,30 +144,58 @@ export default function LoansPage() {
     }
   };
 
+  // Make sure loans is an array before filtering
+  const loansArray = Array.isArray(loans) ? loans : [];
+
   // Filter loans based on search term
-  const filteredLoans = Array.isArray(loans)
-    ? loans.filter((loan) => {
-        const member = getMemberById(loan?.userId);
-        if (!member) return false;
+  const filteredLoans = loansArray.filter((loan) => {
+    if (!loan?.userId) return false;
+    const member = getMemberById(loan.userId);
+    if (!member) return false;
 
-        const searchLowerCase = searchTerm.toLowerCase();
-        return (
-          member.name?.toLowerCase().includes(searchLowerCase) ||
-          member.membershipId?.toLowerCase().includes(searchLowerCase) ||
-          loan.purpose?.toLowerCase().includes(searchLowerCase)
-        );
-      })
-    : [];
-
-  // Add early return for no loans
-  if (!Array.isArray(loans)) {
+    const searchLowerCase = searchTerm.toLowerCase();
     return (
-      <div className="text-center py-10">
-        <FileText className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-        <h3 className="text-lg font-medium">No Loans Available</h3>
-        <p className="text-sm text-muted-foreground mt-1">
-          There seems to be an issue loading the loans data.
-        </p>
+      member.name?.toLowerCase().includes(searchLowerCase) ||
+      member.membershipId?.toLowerCase().includes(searchLowerCase) ||
+      loan.purpose?.toLowerCase().includes(searchLowerCase)
+    );
+  });
+
+  // If no loans data available
+  if (!Array.isArray(loans) || loans.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">
+            Loans Management
+          </h2>
+          <p className="text-muted-foreground">
+            Review and manage loan applications from members
+          </p>
+        </div>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle>Loan Applications</CardTitle>
+              <CardDescription>
+                All loan applications from members
+              </CardDescription>
+            </div>
+            <Button variant="outline" size="sm" onClick={refreshData}>
+              Refresh Data
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-10">
+              <FileText className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium">No Loans Available</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                There are no loan applications to display.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -267,7 +308,7 @@ export default function LoansPage() {
                             openLoanActionDialog(loan.id, 'approve')
                           }
                         >
-                          <CircleCheck className="h-4 w-4 mr-2" />
+                          <CheckCircle className="h-4 w-4 mr-2" />
                           Approve
                         </Button>
                         <Button

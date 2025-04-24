@@ -8,6 +8,8 @@ import {
   UserSettings,
   PaymentStatus,
   FinancialSummary,
+  UserRole,
+  Admin,
 } from '../types';
 
 import {
@@ -279,6 +281,14 @@ export const reportsAPI = {
 
 // User settings API
 export const userAPI = {
+  getUsers: async () => {
+    const response = await api.get('/api/users');
+    return response.data;
+  },
+  updateUserRole: async (userId: string, role: UserRole) => {
+    const response = await api.patch(`/users/${userId}/role`, { role });
+    return response.data;
+  },
   getUserSettings: async (userId: string): Promise<UserSettings> => {
     const response = await api.get<UserSettings>(
       ENDPOINTS.USER.SETTINGS(userId)
@@ -294,6 +304,18 @@ export const userAPI = {
       settingsData
     );
     return response.data;
+  },
+
+  getAdminProfile: async (userId: string): Promise<Admin> => {
+    const response = await api.get<Admin>(`/api/users/${userId}/profile`);
+    return response.data;
+  },
+
+  updateAdminProfile: async (
+    userId: string,
+    data: Partial<Admin>
+  ): Promise<void> => {
+    await api.put(`/api/users/${userId}/profile`, data);
   },
 };
 

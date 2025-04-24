@@ -65,8 +65,8 @@ export default function ProfilePage() {
           name: member.name,
           email: member.email,
           phone: member.phone,
-          currentWorkplace: member.currentWorkplace,
-          currentPosition: member.currentPosition,
+          currentWorkplace: member.currentWorkplace || '',
+          currentPosition: member.currentPosition || '',
           department: member.department,
           graduationYear: member.graduationYear,
         });

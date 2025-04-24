@@ -65,6 +65,9 @@ export const ENDPOINTS = {
 
   // User settings endpoints - Ensuring consistency with prefixes
   USER: {
-    SETTINGS: (userId: string) => `/api/user/${userId}/settings`, // Added /api prefix for consistency
+    BASE: '/api/users',
+    PROFILE: (userId: string) => `/api/users/${userId}/profile`,
+    SETTINGS: (userId: string) => `/api/user/${userId}/settings`,
+    ROLE: (userId: string) => `/api/users/${userId}/role`,
   },
 };

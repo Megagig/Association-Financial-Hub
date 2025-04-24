@@ -52,9 +52,9 @@ export interface LoanApplicationRequest {
   userId: string;
   amount: number;
   purpose: string;
-  applicationDate: string;
+  applicationDate?: string;
   repaymentTerms: string;
-  dueDate: string;
+  dueDate?: string;
   status?: LoanStatus;
 }
 
@@ -100,4 +100,14 @@ export interface UpdateUserSettingsRequest {
   dueReminders?: boolean;
   theme?: string;
   language?: string;
+}
+
+// Add proper error types
+export interface ApiError extends Error {
+  code?: string;
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
 }

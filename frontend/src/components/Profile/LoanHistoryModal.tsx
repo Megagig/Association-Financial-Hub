@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,11 +16,11 @@ import {
   Search,
   Filter,
   Calendar,
-  CircleCheck,
+  CheckCircle as CircleCheck,
   Clock,
   CircleDollarSign,
 } from 'lucide-react';
-import { LoanStatus } from '../../types';
+import { Loan, LoanStatus } from '../../types';
 
 interface LoanHistoryModalProps {
   isOpen: boolean;
@@ -30,16 +30,25 @@ interface LoanHistoryModalProps {
 export function LoanHistoryModal({ isOpen, onClose }: LoanHistoryModalProps) {
   const { user } = useAuth();
   const { getMemberLoans } = useData();
+  const [loans, setLoans] = useState<Loan[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  if (!user) return null;
-  const loans = getMemberLoans(user.id);
-
-  // Filter loans based on search term
-  const filteredLoans = loans.filter((loan) =>
+  useEffect(() => {
+    const fetchLoans = async () => {
+      if (!user?.id) return;
+      try {
+        const loansData = await getMemberLoans(user.id);
+        setLoans(loansData || []);
+      } catch (error) {
+        console.error('Error fetching loans:', error);
+        setLoans([]);
+      }
+    };
+    fetchLoans();
+  }, [user?.id, getMemberLoans]);
+  const filteredLoans = loans.filter((loan: Loan) =>
     loan.purpose.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString();
   };
@@ -47,7 +56,7 @@ export function LoanHistoryModal({ isOpen, onClose }: LoanHistoryModalProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'NGN',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);

@@ -34,15 +34,14 @@ const MemberLayout = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <DashboardHeader />
-      <div className="flex flex-1">
-        <DashboardSidebar items={memberNavItems} />
-        <main className="flex-1 p-6">
-          <Outlet />
-        </main>
-      </div>
-    </div>
+    <DashboardSidebar
+      className="hidden md:block w-64 shrink-0"
+      links={memberNavItems.map((item) => ({
+        to: item.path,
+        label: item.label,
+        end: item.path === '/member',
+      }))}
+    />
   );
 };
 

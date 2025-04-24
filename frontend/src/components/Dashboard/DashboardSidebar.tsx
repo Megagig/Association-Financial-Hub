@@ -1,14 +1,30 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
-import { DollarSign, HelpCircle, Settings, UserCircle } from 'lucide-react';
+import {
+  DollarSign,
+  HelpCircle,
+  LucideIcon,
+  Settings,
+  UserCircle,
+} from 'lucide-react';
 
 interface SidebarProps {
   className?: string;
   onNavigate?: () => void;
+  links: Array<{
+    to: string;
+    label: string;
+    end?: boolean;
+    icon?: LucideIcon;
+  }>;
 }
 
-export function DashboardSidebar({ className, onNavigate }: SidebarProps) {
+export function DashboardSidebar({
+  className,
+  onNavigate,
+  links,
+}: SidebarProps) {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
   const isSuperAdmin = user?.role === 'superadmin';
@@ -27,11 +43,15 @@ export function DashboardSidebar({ className, onNavigate }: SidebarProps) {
       icon: DollarSign,
       label: 'Income & Expenses',
     },
-    isSuperAdmin && {
-      to: '/admin/admin-management',
-      label: 'Admin Management',
-      icon: 'UserCog',
-    },
+    ...(isSuperAdmin
+      ? [
+          {
+            to: '/admin/admin-management',
+            label: 'Admin Management',
+            icon: 'UserCog',
+          },
+        ]
+      : []),
   ].filter(Boolean);
 
   const memberLinks = [
@@ -44,7 +64,7 @@ export function DashboardSidebar({ className, onNavigate }: SidebarProps) {
     { to: '/member/help-support', icon: HelpCircle, label: 'Help & Support' },
   ];
 
-  const links = isAdmin ? adminLinks : memberLinks;
+  // const links = isAdmin ? adminLinks : memberLinks;
 
   return (
     <div className={cn('pb-12 border-r bg-card h-full', className)}>
@@ -66,6 +86,7 @@ export function DashboardSidebar({ className, onNavigate }: SidebarProps) {
                 }
                 onClick={onNavigate}
               >
+                {link.icon && <link.icon className="mr-2 h-4 w-4" />}
                 {link.label}
               </NavLink>
             ))}
