@@ -74,12 +74,16 @@ const AdminLayout = () => {
             <DashboardSidebar
               className="flex-1"
               onNavigate={handleNavigation}
+              links={[]}
             />
           </div>
         </div>
 
         {/* Desktop sidebar - always visible on md+ screens */}
-        <DashboardSidebar className="hidden md:block w-64 shrink-0" />
+        <DashboardSidebar
+          className="hidden md:block w-64 shrink-0"
+          links={[]}
+        />
 
         {/* Main content area */}
         <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">

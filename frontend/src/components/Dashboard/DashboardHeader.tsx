@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useAuth } from '../../context/AuthContext';
-import { Bell, LogOut, Menu } from 'lucide-react';
+import { Bell, LogOut } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
   Tooltip,

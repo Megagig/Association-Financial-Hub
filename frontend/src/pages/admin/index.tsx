@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import AdminDashboard from './AdminDashboard';
-import MemberDashboard from './MemberDashboard';
+import MemberDashboard from '../member/MemberDashboard';
 import { UserRole } from '@/types';
 
 export default function Index() {

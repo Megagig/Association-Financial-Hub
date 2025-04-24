@@ -22,29 +22,57 @@ import { formatDistanceToNow } from 'date-fns';
 export default function AdminDashboard() {
   const { financialSummary, members, payments, loans, isLoading } = useData();
 
+  // Early return for loading state
   if (isLoading) {
-    return <div className="text-center py-10">Loading dashboard data...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-lg">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
   }
 
-  // Get recent payments
-  const recentPayments = [...payments]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 5);
+  // Check for required data and ensure members is an array
+  if (!financialSummary || !Array.isArray(members) || !payments || !loans) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-lg text-error">Failed to load dashboard data</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-primary text-white rounded-md"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  // Get recent loan applications
-  const recentLoans = [...loans]
-    .sort(
-      (a, b) =>
-        new Date(b.applicationDate).getTime() -
-        new Date(a.applicationDate).getTime()
-    )
-    .slice(0, 5);
+  // Get recent payments with null check and type safety
+  const recentPayments = Array.isArray(payments)
+    ? [...payments]
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 5)
+    : [];
+
+  // Get recent loan applications with null check and type safety
+  const recentLoans = Array.isArray(loans)
+    ? [...loans]
+        .sort(
+          (a, b) =>
+            new Date(b.applicationDate).getTime() -
+            new Date(a.applicationDate).getTime()
+        )
+        .slice(0, 5)
+    : [];
 
   // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'NGN',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);

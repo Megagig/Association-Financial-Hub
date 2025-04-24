@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useData } from '@/context/DataContext';
 import {
@@ -20,17 +20,37 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Search, Download } from 'lucide-react';
+import { Payment } from '@/types';
 
 export default function MyPaymentsPage() {
   const { user } = useAuth();
-  const { getMemberPayments, isLoading } = useData();
+  const { getMemberPayments, isLoading: dataContextLoading } = useData();
   const [searchQuery, setSearchQuery] = useState('');
 
-  if (isLoading || !user) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [payments, setPayments] = useState<Payment[]>([]);
+
+  useEffect(() => {
+    const fetchPayments = async () => {
+      if (!user) return;
+
+      try {
+        setIsLoading(true);
+        const paymentData = await getMemberPayments(user.id);
+        setPayments(paymentData || []);
+      } catch (error) {
+        console.error('Error fetching payments:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPayments();
+  }, [user, getMemberPayments]);
+
+  if (isLoading || dataContextLoading || !user) {
     return <div className="text-center py-10">Loading payments data...</div>;
   }
-
-  const payments = getMemberPayments(user.id);
 
   // Filter payments based on search query
   const filteredPayments = payments.filter(

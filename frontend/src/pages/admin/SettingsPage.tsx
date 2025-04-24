@@ -21,7 +21,7 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import { UserSettings, UserRole } from '@/types';
 import { Bell, Lock, User, LogOut, CreditCard } from 'lucide-react';
-import { mockUserSettings } from '@/lib/mockData';
+
 import { useState, useEffect } from 'react';
 
 export default function SettingsPage() {
@@ -39,20 +39,7 @@ export default function SettingsPage() {
       setIsLoading(true);
       await new Promise((resolve) => setTimeout(resolve, 800));
 
-      // Find user settings in mock data
-      const userSettings = mockUserSettings.find(
-        (s) => s.userId === user?.id
-      ) || {
-        id: `settings-${Date.now()}`,
-        userId: user?.id || '',
-        emailNotifications: true,
-        paymentReminders: true,
-        dueReminders: true,
-        theme: 'light',
-        language: 'en',
-      };
-
-      setSettings(userSettings as UserSettings);
+      setSettings(setSettings as unknown as UserSettings);
       setIsLoading(false);
     };
 
@@ -176,14 +163,18 @@ export default function SettingsPage() {
                   <Label htmlFor="member-since">Member Since</Label>
                   <Input
                     id="member-since"
-                    value={new Date(user.memberSince).toLocaleDateString(
-                      'en-US',
-                      {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      }
-                    )}
+                    value={
+                      user.memberSince
+                        ? new Date(user.memberSince).toLocaleDateString(
+                            'en-US',
+                            {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            }
+                          )
+                        : 'N/A'
+                    }
                     disabled
                   />
                 </div>

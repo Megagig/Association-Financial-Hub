@@ -25,81 +25,50 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Shield, ShieldAlert, UserCog } from 'lucide-react';
-// Import the API service
-import { userApi } from '@/services/api';
+import userApi from '@/services/api';
 
 export default function AdminManagementPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<
+    {
+      _id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      role: string;
+    }[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+  // const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';clea
 
   const fetchUsers = async () => {
     try {
-      setIsLoading(true);
-      // Use the API service instead of direct fetch
-      const data = await userApi.getUsers();
-      // Adjust based on your actual API response structure
-      setUsers(Array.isArray(data) ? data : data.users || []);
+      const response = await fetch('/api/users');
+      const data = await response.json();
+      setUsers(data);
     } catch (error) {
-      console.error('Error fetching admins:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch admin list',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
+      console.error('Error fetching users:', error);
     }
   };
 
   const handleRoleUpdate = async (userId: string, newRole: string) => {
     try {
-      // Use the API service for updating roles
-      await userApi.updateUserRole(userId, newRole);
-
-      toast({
-        title: 'Success',
-        description: 'User role updated successfully',
+      await fetch(`/api/users/${userId}/role`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole }),
       });
-
-      // Refresh the user list
-      fetchUsers();
+      await fetchUsers();
     } catch (error) {
       console.error('Error updating role:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update user role',
-        variant: 'destructive',
-      });
     }
   };
 
   useEffect(() => {
     fetchUsers();
   }, []);
-
-  // if (!isAdmin && user?.role !== 'superadmin') {
-  //   return (
-  //     <div className="flex items-center justify-center h-full">
-  //       <Card className="w-full max-w-md">
-  //         <CardHeader>
-  //           <CardTitle>Access Restricted</CardTitle>
-  //           <CardDescription>
-  //             You don't have permission to access this page.
-  //           </CardDescription>
-  //         </CardHeader>
-  //         <CardContent>
-  //           <p>This page is only available to administrators.</p>
-  //         </CardContent>
-  //       </Card>
-  //     </div>
-  //   );
-  // }
-
-  // Replace the existing check:
   if (user?.role !== 'superadmin') {
     return (
       <div className="flex items-center justify-center h-full">

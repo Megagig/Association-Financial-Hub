@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '../../components/ui/dialog';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { StatusBadge } from '../../components/Dashboard/StatusBadge';
-import { useData } from '../../context/DataContext';
-import { useAuth } from '../../context/AuthContext';
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { StatusBadge } from '@/components/Dashboard/StatusBadge';
+import { useData } from '@/context/DataContext';
+import { useAuth } from '@/context/AuthContext';
 import { Download, Search, Filter, Calendar } from 'lucide-react';
-import { PaymentStatus } from '../../types';
+import { Payment, PaymentStatus } from '@/types';
 
 interface PaymentHistoryModalProps {
   isOpen: boolean;
@@ -25,14 +25,21 @@ export function PaymentHistoryModal({
 }: PaymentHistoryModalProps) {
   const { user } = useAuth();
   const { getMemberPayments } = useData();
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  if (!user) return null;
-  const payments = getMemberPayments(user.id);
-
   // Filter payments based on search term
+  useEffect(() => {
+    const fetchPayments = async () => {
+      if (!user?.id) return;
+      const data = await getMemberPayments(user.id);
+      setPayments(data || []);
+    };
+    fetchPayments();
+  }, [user?.id, getMemberPayments]);
+
   const filteredPayments = payments.filter(
-    (payment) =>
+    (payment: Payment) =>
       payment.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       payment.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -44,7 +51,7 @@ export function PaymentHistoryModal({
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'NGN',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);

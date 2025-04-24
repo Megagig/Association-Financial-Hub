@@ -13,31 +13,24 @@ export type RegisterFormData = {
 };
 
 export interface User {
-  _id: string; // Match backend field name
+  _id: string;
+  id: string;
   email: string;
   firstName: string;
   lastName: string;
+  name?: string;
   role: UserRole;
+  phone?: string;
+  position?: string;
   avatar?: string;
+  membershipId?: string;
+  memberSince?: string;
+  department?: string;
+  graduationYear?: string;
+  currentWorkplace?: string;
+  currentPosition?: string;
 }
 
-// // Define Toast Message interface
-// export interface ToastMessage {
-//   message: string;
-//   type: 'success' | 'error';
-// }
-
-// export interface User {
-//   id: string;
-//   name: string;
-//   email: string;
-//   role: UserRole;
-//   avatar?: string;
-//   memberSince: string;
-//   membershipId: string;
-// }
-
-// Remove duplicate User interface
 export interface ToastMessage {
   message: string;
   type: 'success' | 'error';
@@ -73,16 +66,16 @@ export enum DueType {
   OTHER = 'other',
 }
 
-// export interface User {
-//   id: string;
-//   name: string;
-//   email: string;
-//   role: UserRole;
-//   avatar?: string;
-//   memberSince: string;
-//   membershipId: string;
-// }
-
+export interface FinancialSummary {
+  totalMembers: number;
+  totalDuesCollected: number;
+  totalDonations: number;
+  totalLoansDisbursed: number;
+  totalDuesPending: number;
+  totalPledges: number;
+  totalLoansRepaid: number;
+  pendingLoanApplications: number;
+}
 export interface Payment {
   id: string;
   userId: string;
@@ -123,6 +116,7 @@ export interface Due {
 
 export interface Member {
   id: string;
+  _id?: string;
   name: string;
   email: string;
   phone: string;
@@ -138,6 +132,13 @@ export interface Member {
   totalDonations: number;
   activeLoans: number;
   loanBalance: number;
+}
+export interface AdminUser {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: UserRole;
 }
 
 export interface FinancialSummary {
@@ -163,6 +164,23 @@ export interface Report {
   generatedBy: string;
   generatedAt: string;
   data: any; // This would be the report data structure
+}
+
+export interface Admin {
+  id: string;
+  _id?: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: UserRole;
+  name?: string;
+  phone?: string;
+  position?: string;
+  avatar?: string;
+  department?: string;
+  lastLogin?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface UserSettings {

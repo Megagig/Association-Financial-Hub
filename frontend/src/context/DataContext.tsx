@@ -6,7 +6,6 @@ import {
   ReactNode,
 } from 'react';
 import {
-  User,
   Payment,
   Loan,
   Due,
@@ -14,16 +13,35 @@ import {
   FinancialSummary,
   Report,
   UserSettings,
-  UserRole,
   PaymentStatus,
   LoanStatus,
-  DueType,
+  Admin,
 } from '../types';
 
 import { useToast } from '../components/ui/use-toast';
 import { useAuth } from './AuthContext';
 
+import {
+  membersAPI,
+  paymentsAPI,
+  loansAPI,
+  duesAPI,
+  reportsAPI,
+  userAPI,
+} from '../services/api';
+
+import {
+  CreatePaymentRequest,
+  LoanApplicationRequest,
+  CreateDueRequest,
+  GenerateReportRequest,
+  UpdateUserSettingsRequest,
+  ApiError,
+} from '../services/api.types';
+import { handleApiError } from '../lib/errorHandling';
+
 interface DataContextType {
+  //State types
   members: Member[];
   payments: Payment[];
   loans: Loan[];
@@ -32,33 +50,53 @@ interface DataContextType {
   reports: Report[];
   userSettings: UserSettings | null;
   isLoading: boolean;
-  addPayment: (payment: Partial<Payment>) => Promise<void>;
+
+  // Async methods should return Promise<void> or Promise<T>
+  addPayment: (payment: CreatePaymentRequest) => Promise<void>;
   updatePaymentStatus: (id: string, status: PaymentStatus) => Promise<void>;
-  addLoan: (loan: Loan) => Promise<void>;
+  addLoan: (loan: LoanApplicationRequest) => Promise<void>;
   updateLoanStatus: (id: string, status: LoanStatus) => Promise<void>;
-  addDue: (due: Due) => Promise<void>;
+  addDue: (due: CreateDueRequest) => Promise<void>;
   updateDueStatus: (id: string, status: PaymentStatus) => Promise<void>;
-  addReport: (report: Report) => Promise<void>;
-  updateUserSettings: (settings: UserSettings) => Promise<void>;
+  addReport: (report: GenerateReportRequest) => Promise<void>;
+  updateUserSettings: (settings: UpdateUserSettingsRequest) => Promise<void>;
+  getMemberProfile: (userId: string) => Promise<Member>;
+  updateMemberProfile: (userId: string, data: Partial<Member>) => Promise<void>;
+  getAdminProfile: (userId: string) => Promise<Admin>;
+  updateAdminProfile: (userId: string, data: Partial<Admin>) => Promise<void>;
+
+  // Query methods
   getMemberById: (userId: string) => Member | undefined;
-  getMemberPayments: (userId: string) => Payment[];
-  getMemberLoans: (userId: string) => Loan[];
+
+  getMemberPayments: (userId: string) => Promise<Payment[]>;
+  getMemberLoans: (userId: string) => Promise<Loan[]>;
   applyForLoan: (loanData: {
     userId: string;
     amount: number;
     purpose: string;
   }) => Promise<void>;
+  refreshData: () => Promise<void>;
 }
 
+// Create a context with a default value of undefined
 const DataContext = createContext<DataContextType | undefined>(undefined);
+
+export const useData = () => {
+  const context = useContext(DataContext);
+  if (!context) {
+    throw new Error('useData must be used within a DataProvider');
+  }
+  return context;
+};
 
 interface DataProviderProps {
   children: ReactNode;
 }
 
 export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+
   const [members, setMembers] = useState<Member[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -69,406 +107,350 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        const mockMembers: Member[] = [
-          {
-            id: 'member-1',
-            name: 'John Doe',
-            email: 'john.doe@example.com',
-            phone: '123-456-7890',
-            membershipId: 'JD123',
-            graduationYear: '2010',
-            memberSince: '2015-01-01',
-            department: 'Engineering',
-            currentWorkplace: 'ABC Corp',
-            currentPosition: 'Senior Engineer',
-            avatar: 'https://i.pravatar.cc/150?img=1',
-            totalDuesPaid: 500,
-            duesOwing: 100,
-            totalDonations: 200,
-            activeLoans: 1,
-            loanBalance: 5000,
-          },
-          {
-            id: 'member-2',
-            name: 'Jane Smith',
-            email: 'jane.smith@example.com',
-            phone: '987-654-3210',
-            membershipId: 'JS456',
-            graduationYear: '2012',
-            memberSince: '2016-05-15',
-            department: 'Marketing',
-            currentWorkplace: 'XYZ Ltd',
-            currentPosition: 'Marketing Manager',
-            avatar: 'https://i.pravatar.cc/150?img=2',
-            totalDuesPaid: 600,
-            duesOwing: 0,
-            totalDonations: 300,
-            activeLoans: 0,
-            loanBalance: 0,
-          },
-          {
-            id: 'member-3',
-            name: 'Alice Johnson',
-            email: 'alice.johnson@example.com',
-            phone: '555-123-4567',
-            membershipId: 'AJ789',
-            graduationYear: '2015',
-            memberSince: '2018-03-10',
-            department: 'Finance',
-            currentWorkplace: 'PQR Inc',
-            currentPosition: 'Financial Analyst',
-            avatar: 'https://i.pravatar.cc/150?img=3',
-            totalDuesPaid: 400,
-            duesOwing: 200,
-            totalDonations: 100,
-            activeLoans: 1,
-            loanBalance: 2500,
-          },
-          {
-            id: 'member-4',
-            name: 'Bob Williams',
-            email: 'bob.williams@example.com',
-            phone: '111-222-3333',
-            membershipId: 'BW012',
-            graduationYear: '2013',
-            memberSince: '2017-09-20',
-            department: 'Arts',
-            currentWorkplace: 'LMN Studio',
-            currentPosition: 'Creative Director',
-            avatar: 'https://i.pravatar.cc/150?img=4',
-            totalDuesPaid: 700,
-            duesOwing: 50,
-            totalDonations: 400,
-            activeLoans: 0,
-            loanBalance: 0,
-          },
-          {
-            id: 'member-5',
-            name: 'Emily Brown',
-            email: 'emily.brown@example.com',
-            phone: '444-555-6666',
-            membershipId: 'EB345',
-            graduationYear: '2011',
-            memberSince: '2014-11-01',
-            department: 'Science',
-            currentWorkplace: 'STU Labs',
-            currentPosition: 'Research Scientist',
-            avatar: 'https://i.pravatar.cc/150?img=5',
-            totalDuesPaid: 550,
-            duesOwing: 75,
-            totalDonations: 250,
-            activeLoans: 1,
-            loanBalance: 1000,
-          },
-        ];
-        const mockPayments: Payment[] = [
-          {
-            id: 'payment-1',
-            userId: 'member-1',
-            amount: 50,
-            type: 'dues',
-            description: 'Membership dues payment',
-            date: '2024-01-15',
-            status: PaymentStatus.APPROVED,
-            receiptUrl: 'https://example.com/receipt1.jpg',
-          },
-          {
-            id: 'payment-2',
-            userId: 'member-2',
-            amount: 100,
-            type: 'donation',
-            description: 'Annual donation',
-            date: '2024-02-01',
-            status: PaymentStatus.PENDING,
-            receiptUrl: 'https://example.com/receipt2.jpg',
-          },
-          {
-            id: 'payment-3',
-            userId: 'member-3',
-            amount: 25,
-            type: 'dues',
-            description: 'Partial dues payment',
-            date: '2024-02-10',
-            status: PaymentStatus.REJECTED,
-            receiptUrl: 'https://example.com/receipt3.jpg',
-          },
-          {
-            id: 'payment-4',
-            userId: 'member-1',
-            amount: 75,
-            type: 'pledge',
-            description: 'Pledge payment for new building',
-            date: '2024-03-01',
-            status: PaymentStatus.APPROVED,
-            receiptUrl: 'https://example.com/receipt4.jpg',
-          },
-          {
-            id: 'payment-5',
-            userId: 'member-4',
-            amount: 60,
-            type: 'dues',
-            description: 'Membership dues',
-            date: '2024-03-15',
-            status: PaymentStatus.PENDING,
-            receiptUrl: 'https://example.com/receipt5.jpg',
-          },
-        ];
-        const mockLoans: Loan[] = [
-          {
-            id: 'loan-1',
-            userId: 'member-1',
-            amount: 1000,
-            purpose: 'Education',
-            applicationDate: '2023-11-01',
-            status: LoanStatus.APPROVED,
-            approvedBy: 'admin-1',
-            approvalDate: '2023-11-15',
-            repaymentTerms: '12 months',
-            dueDate: '2024-11-15',
-          },
-          {
-            id: 'loan-2',
-            userId: 'member-3',
-            amount: 500,
-            purpose: 'Business',
-            applicationDate: '2023-12-01',
-            status: LoanStatus.PENDING,
-            repaymentTerms: '6 months',
-            dueDate: '2024-06-01',
-          },
-          {
-            id: 'loan-3',
-            userId: 'member-5',
-            amount: 2000,
-            purpose: 'Home Improvement',
-            applicationDate: '2024-01-01',
-            status: LoanStatus.REJECTED,
-            repaymentTerms: '24 months',
-            dueDate: '2026-01-01',
-          },
-        ];
-        const mockDues: Due[] = [
-          {
-            id: 'due-1',
-            userId: 'member-1',
-            title: 'Annual Membership Dues',
-            description: 'Annual dues for 2024',
-            amount: 100,
-            type: DueType.ANNUAL,
-            createdAt: '2024-01-01',
-            dueDate: '2024-12-31',
-            status: PaymentStatus.PENDING,
-            paidAmount: 0,
-            issuedBy: 'admin-1',
-          },
-          {
-            id: 'due-2',
-            userId: 'member-2',
-            title: 'Monthly Dues - January',
-            description: 'Dues for January 2024',
-            amount: 25,
-            type: DueType.MONTHLY,
-            createdAt: '2024-01-01',
-            dueDate: '2024-01-31',
-            status: PaymentStatus.APPROVED,
-            paidAmount: 25,
-            issuedBy: 'admin-1',
-          },
-          {
-            id: 'due-3',
-            userId: 'member-3',
-            title: 'Special Event Dues',
-            description: 'Dues for Alumni Reunion Event',
-            amount: 50,
-            type: DueType.SPECIAL,
-            createdAt: '2024-02-15',
-            dueDate: '2024-03-15',
-            status: PaymentStatus.PENDING,
-            paidAmount: 0,
-            issuedBy: 'admin-1',
-          },
-        ];
-        const mockFinancialSummary: FinancialSummary = {
-          totalMembers: mockMembers.length,
-          totalDuesCollected: 15000,
-          totalDuesPending: 5000,
-          totalDonations: 10000,
-          totalPledges: 2500,
-          totalLoansDisbursed: 20000,
-          totalLoansRepaid: 5000,
-          pendingLoanApplications: 5,
-        };
-        const mockReports: Report[] = [
-          {
-            id: 'report-1',
-            title: 'Monthly Financial Report',
-            description: 'Summary of financial activities for January 2024',
-            dateRange: {
-              from: '2024-01-01',
-              to: '2024-01-31',
-            },
-            type: 'summary',
-            generatedBy: 'admin-1',
-            generatedAt: '2024-02-01',
-            data: {
-              income: 10000,
-              expenses: 5000,
-            },
-          },
-        ];
-        const mockUserSettings: UserSettings = {
-          id: 'settings-1',
-          userId: user?.id || 'user-1',
-          emailNotifications: true,
-          paymentReminders: true,
-          dueReminders: true,
-          theme: 'light',
-          language: 'en',
-        };
+  // Modified refreshData with better logging and error handling
+  const refreshData = async () => {
+    console.log('RefreshData called with user:', user);
 
-        setMembers(mockMembers);
-        setPayments(mockPayments);
-        setLoans(mockLoans);
-        setDues(mockDues);
-        setFinancialSummary(mockFinancialSummary);
-        setReports(mockReports);
-        setUserSettings(mockUserSettings);
+    // Skip if auth is still loading
+    if (authLoading) {
+      console.log('Auth still loading, waiting before refreshing data');
+      return;
+    }
+
+    // Check for valid user
+    if (!user) {
+      console.log('No user found, skipping data refresh');
+      setIsLoading(false);
+      return;
+    }
+
+    // Handle both id and _id possible formats
+    const userId = user.id || user._id;
+
+    if (!userId) {
+      console.log('User object is missing ID property:', user);
+      setIsLoading(false);
+      return;
+    }
+
+    console.log(
+      `Starting data refresh for user ${userId} with role ${user.role}`
+    );
+
+    setIsLoading(true);
+
+    try {
+      // Load members first
+      try {
+        console.log('Fetching members data...');
+        const membersData = await membersAPI.getAllMembers();
+        console.log(`Retrieved ${membersData.length} members`);
+        setMembers(membersData);
+      } catch (memberError) {
+        console.error('Error fetching members:', memberError);
+        toast({
+          variant: 'destructive',
+          title: 'Error Fetching Members',
+          description: handleApiError(memberError),
+        });
+      }
+
+      try {
+        setIsLoading(true);
+        const loansData = await loansAPI.getAllLoans();
+        setLoans(loansData || []); // Ensure we always set an array
       } catch (error) {
-        console.error('Error loading data:', error);
+        console.error('Error loading loans:', error);
+        setLoans([]); // Set empty array on error
         toast({
           variant: 'destructive',
           title: 'Error',
-          description: 'Failed to load data. Please try again later.',
+          description: 'Failed to load loans data',
         });
       } finally {
         setIsLoading(false);
       }
-    };
 
-    loadData();
-  }, [user, toast]);
+      // Load other data in parallel
+      try {
+        console.log('Fetching other data...');
+        const [
+          paymentsData,
+          loansData,
+          duesData,
+          financialSummaryData,
+          reportsData,
+          userSettingsData,
+        ] = await Promise.all([
+          paymentsAPI.getAllPayments(),
+          loansAPI.getAllLoans(),
+          duesAPI.getAllDues(),
+          membersAPI.getFinancialSummary().catch((e) => {
+            console.error('Failed to fetch financial summary:', e);
+            return null;
+          }),
+          reportsAPI.getAllReports().catch((e) => {
+            console.error('Failed to fetch reports:', e);
+            return [];
+          }),
+          userAPI.getUserSettings(userId).catch((e) => {
+            console.error('Failed to fetch user settings:', e);
+            return null;
+          }),
+        ]);
 
-  const addPayment = async (paymentData: Partial<Payment>) => {
-    const newPayment: Payment = {
-      id: `payment-${Date.now()}`,
-      userId: paymentData.userId || '',
-      amount: paymentData.amount || 0,
-      type: paymentData.type || 'dues',
-      description: paymentData.description || '',
-      date: paymentData.date || new Date().toISOString(),
-      status: PaymentStatus.PENDING,
-      receiptUrl: paymentData.receiptUrl || '',
-    };
+        setPayments(paymentsData);
+        setLoans(loansData);
+        setDues(duesData);
 
-    setPayments((prevPayments) => [newPayment, ...prevPayments]);
+        if (financialSummaryData) {
+          setFinancialSummary(financialSummaryData);
+        }
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+        if (reportsData) {
+          setReports(reportsData);
+        }
 
-    toast({
-      title: 'Payment Added',
-      description: 'Payment added successfully.',
-    });
+        if (userSettingsData) {
+          setUserSettings(userSettingsData);
+        }
+
+        console.log('All data loaded successfully');
+      } catch (otherDataError) {
+        console.error('Error fetching supplementary data:', otherDataError);
+        toast({
+          variant: 'destructive',
+          title: 'Error Loading Data',
+          description: handleApiError(otherDataError),
+        });
+      }
+    } catch (error) {
+      console.error('General error in refreshData:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: handleApiError(error),
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (!authLoading && user) {
+      console.log('Auth loaded, user present - refreshing data');
+      refreshData();
+    } else if (!authLoading) {
+      console.log('Auth loaded but no user present');
+      setIsLoading(false);
+    }
+  }, [user, authLoading]);
+
+  const addPayment = async (paymentData: CreatePaymentRequest) => {
+    try {
+      const newPayment = await paymentsAPI.createPayment(paymentData);
+
+      setPayments((prevPayments) => [newPayment, ...prevPayments]);
+
+      toast({
+        title: 'Payment Added',
+        description: 'Payment added successfully.',
+      });
+    } catch (error) {
+      console.error('Error adding payment:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: handleApiError(error),
+      });
+    }
   };
 
   const updatePaymentStatus = async (id: string, status: PaymentStatus) => {
-    setPayments((prevPayments) =>
-      prevPayments.map((payment) =>
-        payment.id === id ? { ...payment, status } : payment
-      )
-    );
+    try {
+      const updatedPayment = await paymentsAPI.updatePaymentStatus(id, status);
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+      setPayments((prevPayments) =>
+        prevPayments.map((payment) =>
+          payment.id === id ? updatedPayment : payment
+        )
+      );
 
-    toast({
-      title: 'Payment Updated',
-      description: `Payment status updated to ${status}.`,
-    });
+      toast({
+        title: 'Payment Updated',
+        description: `Payment status updated to ${status}.`,
+      });
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: handleApiError(error),
+      });
+    }
   };
 
-  const addLoan = async (loan: Loan) => {
-    setLoans((prevLoans) => [loan, ...prevLoans]);
+  const addLoan = async (loanData: LoanApplicationRequest) => {
+    try {
+      const newLoan = await loansAPI.applyForLoan(loanData);
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+      setLoans((prevLoans) => [newLoan, ...prevLoans]);
 
-    toast({
-      title: 'Loan Added',
-      description: 'Loan added successfully.',
-    });
+      toast({
+        title: 'Loan Added',
+        description: 'Loan added successfully.',
+      });
+    } catch (error) {
+      console.error('Error adding loan:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: handleApiError(error),
+      });
+    }
   };
 
   const updateLoanStatus = async (id: string, status: LoanStatus) => {
-    setLoans((prevLoans) =>
-      prevLoans.map((loan) => (loan.id === id ? { ...loan, status } : loan))
-    );
+    try {
+      const updatedLoan = await loansAPI.updateLoanStatus(id, { status });
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+      setLoans((prevLoans) =>
+        prevLoans.map((loan) => (loan.id === id ? updatedLoan : loan))
+      );
 
-    toast({
-      title: 'Loan Updated',
-      description: `Loan status updated to ${status}.`,
-    });
+      toast({
+        title: 'Loan Updated',
+        description: `Loan status updated to ${status}.`,
+      });
+    } catch (error) {
+      console.error('Error updating loan status:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: handleApiError(error),
+      });
+    }
   };
 
-  const addDue = async (due: Due) => {
-    setDues((prevDues) => [due, ...prevDues]);
+  const addDue = async (dueData: CreateDueRequest) => {
+    try {
+      const newDue = await duesAPI.createDue(dueData);
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+      setDues((prevDues) => [newDue, ...prevDues]);
 
-    toast({
-      title: 'Due Added',
-      description: 'Due added successfully.',
-    });
+      toast({
+        title: 'Due Added',
+        description: 'Due added successfully.',
+      });
+    } catch (error) {
+      console.error('Error adding due:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: handleApiError(error),
+      });
+    }
   };
 
   const updateDueStatus = async (id: string, status: PaymentStatus) => {
-    setDues((prevDues) =>
-      prevDues.map((due) => (due.id === id ? { ...due, status } : due))
-    );
+    try {
+      const updatedDue = await duesAPI.updateDueStatus(id, { status });
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+      setDues((prevDues) =>
+        prevDues.map((due) => (due.id === id ? updatedDue : due))
+      );
 
-    toast({
-      title: 'Due Updated',
-      description: `Due status updated to ${status}.`,
-    });
+      toast({
+        title: 'Due Updated',
+        description: `Due status updated to ${status}.`,
+      });
+    } catch (error) {
+      console.error('Error updating due status:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: handleApiError(error),
+      });
+    }
   };
 
-  const addReport = async (report: Report) => {
-    setReports((prevReports) => [report, ...prevReports]);
+  const addReport = async (reportData: GenerateReportRequest) => {
+    try {
+      const newReport = await reportsAPI.generateReport(reportData);
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+      setReports((prevReports) => [newReport, ...prevReports]);
 
-    toast({
-      title: 'Report Added',
-      description: 'Report added successfully.',
-    });
+      toast({
+        title: 'Report Added',
+        description: 'Report added successfully.',
+      });
+    } catch (error) {
+      console.error('Error adding report:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: handleApiError(error),
+      });
+    }
   };
 
-  const updateUserSettings = async (settings: UserSettings) => {
-    setUserSettings(settings);
+  const updateUserSettings = async (settings: UpdateUserSettingsRequest) => {
+    if (!user?.id) return;
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      const updatedSettings = await userAPI.updateUserSettings(
+        user.id,
+        settings
+      );
 
-    toast({
-      title: 'Settings Updated',
-      description: 'User settings updated successfully.',
-    });
+      setUserSettings(updatedSettings);
+
+      toast({
+        title: 'Settings Updated',
+        description: 'User settings updated successfully.',
+      });
+    } catch (error) {
+      console.error('Error updating user settings:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: handleApiError(error),
+      });
+    }
   };
 
   const getMemberById = (userId: string): Member | undefined => {
-    return members.find((member) => member.id === userId);
+    if (!userId) return undefined;
+    return members.find(
+      (member) => member.id === userId || member._id === userId
+    );
   };
 
-  const getMemberPayments = (userId: string): Payment[] => {
-    return payments.filter((payment) => payment.userId === userId);
+  const getMemberPayments = async (userId: string): Promise<Payment[]> => {
+    try {
+      return await paymentsAPI.getUserPaymentHistory(userId);
+    } catch (error) {
+      console.error('Error fetching member payments:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: handleApiError(error),
+      });
+      return [];
+    }
   };
 
-  const getMemberLoans = (userId: string): Loan[] => {
-    return loans.filter((loan) => loan.userId === userId);
+  const getMemberLoans = async (userId: string): Promise<Loan[]> => {
+    try {
+      return await loansAPI.getUserLoanHistory(userId);
+    } catch (error) {
+      console.error('Error fetching member loans:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: handleApiError(error),
+      });
+      return [];
+    }
   };
 
   const applyForLoan = async (loanData: {
@@ -476,25 +458,79 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     amount: number;
     purpose: string;
   }) => {
-    const newLoan: Loan = {
-      id: `loan-${Date.now()}`,
-      userId: loanData.userId,
-      amount: loanData.amount,
-      purpose: loanData.purpose,
-      applicationDate: new Date().toISOString(),
-      status: LoanStatus.PENDING,
-      repaymentTerms: '12 months',
-      dueDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-    };
+    try {
+      const newLoan = await loansAPI.applyForLoan({
+        userId: loanData.userId,
+        amount: loanData.amount,
+        purpose: loanData.purpose,
+        applicationDate: new Date().toISOString(),
+        status: LoanStatus.PENDING,
+        repaymentTerms: '12 months',
+        dueDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      });
 
-    setLoans((prevLoans) => [newLoan, ...prevLoans]);
+      setLoans((prevLoans) => [newLoan, ...prevLoans]);
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+      toast({
+        title: 'Loan Application Submitted',
+        description: 'Your loan application has been submitted for review.',
+      });
+    } catch (error) {
+      console.error('Error applying for loan:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: handleApiError(error),
+      });
+    }
+  };
 
-    toast({
-      title: 'Loan Application Submitted',
-      description: 'Your loan application has been submitted for review.',
-    });
+  const getMemberProfile = async (userId: string): Promise<Member> => {
+    try {
+      const member = members.find((m) => m.id === userId || m._id === userId);
+      if (!member) throw new Error('Member not found');
+      return member;
+    } catch (error) {
+      console.error('Error fetching member profile:', error);
+      throw error;
+    }
+  };
+
+  const updateMemberProfile = async (
+    userId: string,
+    data: Partial<Member>
+  ): Promise<void> => {
+    try {
+      const response = await membersAPI.updateMember(userId, data);
+      setMembers((prevMembers) =>
+        prevMembers.map((m) => (m.id === userId ? { ...m, ...response } : m))
+      );
+    } catch (error) {
+      console.error('Error updating member profile:', error);
+      throw error;
+    }
+  };
+
+  const getAdminProfile = async (userId: string): Promise<Admin> => {
+    try {
+      const response = await userAPI.getAdminProfile(userId);
+      return response;
+    } catch (error) {
+      console.error('Error fetching admin profile:', error);
+      throw error;
+    }
+  };
+
+  const updateAdminProfile = async (
+    userId: string,
+    data: Partial<Admin>
+  ): Promise<void> => {
+    try {
+      await userAPI.updateAdminProfile(userId, data);
+    } catch (error) {
+      console.error('Error updating admin profile:', error);
+      throw error;
+    }
   };
 
   const value: DataContextType = {
@@ -518,34 +554,31 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     getMemberPayments,
     getMemberLoans,
     applyForLoan,
+    refreshData,
+    getMemberProfile: function (userId: string): Promise<Member> {
+      throw new Error('Function not implemented.');
+    },
+    updateMemberProfile: function (
+      userId: string,
+      data: Partial<Member>
+    ): Promise<void> {
+      throw new Error('Function not implemented.');
+    },
+    getAdminProfile: async (userId: string) => {
+      try {
+        return await userAPI.getAdminProfile(userId);
+      } catch (error) {
+        console.error('Error fetching admin profile:', error);
+        throw error;
+      }
+    },
+    updateAdminProfile: function (
+      userId: string,
+      data: Partial<Admin>
+    ): Promise<void> {
+      throw new Error('Function not implemented.');
+    },
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };
-
-export const useData = () => {
-  const context = useContext(DataContext);
-  if (!context) {
-    throw new Error('useData must be used within a DataProvider');
-  }
-  return context;
-};
-
-// // Add these functions to your DataContext
-// const getMemberProfile = (userId: string) => {
-//   // Implement your logic to fetch member profile
-//   return user;
-// };
-
-// const getAdminProfile = (userId: string) => {
-//   // Implement your logic to fetch admin profile
-//   return user;
-// };
-
-// const updateMemberProfile = async (userId: string, data: any) => {
-//   // Implement your profile update logic
-// };
-
-// const updateAdminProfile = async (userId: string, data: any) => {
-//   // Implement your profile update logic
-// };

@@ -18,7 +18,7 @@ const Register = () => {
   } = useForm<RegisterFormData>();
 
   // Use mutation for registration
-  const mutation = useMutation({
+  const mutation = useMutation<any, Error, RegisterFormData>({
     mutationFn: async (data: RegisterFormData) => {
       const response = await fetch(`${API_BASE_URL}/api/users/register`, {
         method: 'POST',
@@ -284,10 +284,10 @@ const Register = () => {
                 <div className="pt-2">
                   <button
                     type="submit"
-                    disabled={isSubmitting || mutation.isPending}
+                    disabled={isSubmitting || mutation.isLoading}
                     className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-70"
                   >
-                    {isSubmitting || mutation.isPending ? (
+                    {isSubmitting || mutation.isLoading ? (
                       <div className="flex items-center justify-center">
                         <svg
                           className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
