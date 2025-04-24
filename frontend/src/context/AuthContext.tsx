@@ -179,7 +179,7 @@ interface AuthContextType {
 }
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'https://api.example.com';
+  import.meta.env.VITE_API_BASE_URL || 'https://savio-96-alumni.vercel.app';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
