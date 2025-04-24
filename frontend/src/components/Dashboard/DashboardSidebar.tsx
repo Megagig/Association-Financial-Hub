@@ -7,6 +7,7 @@ import {
   LucideIcon,
   Settings,
   UserCircle,
+  UserCog,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -20,11 +21,7 @@ interface SidebarProps {
   }>;
 }
 
-export function DashboardSidebar({
-  className,
-  onNavigate,
-  links,
-}: SidebarProps) {
+export function DashboardSidebar({ className, onNavigate }: SidebarProps) {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
   const isSuperAdmin = user?.role === 'superadmin';
@@ -48,7 +45,7 @@ export function DashboardSidebar({
           {
             to: '/admin/admin-management',
             label: 'Admin Management',
-            icon: 'UserCog',
+            icon: UserCog,
           },
         ]
       : []),
@@ -64,14 +61,15 @@ export function DashboardSidebar({
     { to: '/member/help-support', icon: HelpCircle, label: 'Help & Support' },
   ];
 
-  // const links = isAdmin ? adminLinks : memberLinks;
+  // Use the correct links based on user role
+  const navigationLinks = isAdmin ? adminLinks : memberLinks;
 
   return (
     <div className={cn('pb-12 border-r bg-card h-full', className)}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
           <div className="space-y-1">
-            {links.map((link) => (
+            {navigationLinks.map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
