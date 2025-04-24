@@ -33,14 +33,22 @@ import {
 } from '../config/apiConfig';
 
 // Create an axios instance
+// const api = axios.create({
+//   baseURL: API_BASE_URL,
+//   headers: {
+//     'Content-Type': 'application/json',
+//   },
+//   credentials: 'include',
+//   withCredentials: INCLUDE_CREDENTIALS,
+//   timeout: API_TIMEOUT,
+// });
+
 const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
-  credentials: 'include',
-  withCredentials: INCLUDE_CREDENTIALS,
-  timeout: API_TIMEOUT,
 });
 
 // Add request interceptor to attach JWT token
@@ -75,6 +83,16 @@ api.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
+  validateToken: async () => {
+    try {
+      const response = await api.get('/api/auth/validate-token');
+      return response.data;
+    } catch (error) {
+      console.error('Token validation failed:', error);
+      throw error;
+    }
+  },
+
   login: async (email: string, password: string): Promise<AuthResponse> => {
     const response = await api.post<AuthResponse>(ENDPOINTS.AUTH.LOGIN, {
       email,

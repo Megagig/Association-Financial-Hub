@@ -20,13 +20,44 @@ verifies it, and if valid, extracts the user ID from the token payload.
 
  */
 
+// export const verifyToken = (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ): void => {
+//   try {
+//     // Check for auth token in cookies
+//     const token = req.cookies.auth_token;
+
+//     if (!token) {
+//       res.status(401).json({ message: 'Authentication required' });
+//       return;
+//     }
+
+//     // Verify the token
+//     const decoded = jwt.verify(
+//       token,
+//       process.env.JWT_SECRET_KEY as string
+//     ) as JWTPayload;
+
+//     // Add the decoded user to the request object
+//     if (typeof decoded === 'object' && 'userId' in decoded) {
+//       req.userId = decoded.userId;
+//       next();
+//     } else {
+//       res.status(401).json({ message: 'Invalid token payload' });
+//     }
+//   } catch (error) {
+//     res.status(401).json({ message: 'Invalid token' });
+//   }
+// };
+
 export const verifyToken = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
   try {
-    // Check for auth token in cookies
     const token = req.cookies.auth_token;
 
     if (!token) {
@@ -34,21 +65,21 @@ export const verifyToken = (
       return;
     }
 
-    // Verify the token
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string
     ) as JWTPayload;
 
-    // Add the decoded user to the request object
-    if (typeof decoded === 'object' && 'userId' in decoded) {
-      req.userId = decoded.userId;
-      next();
-    } else {
-      res.status(401).json({ message: 'Invalid token payload' });
+    if (!decoded || !decoded.userId) {
+      res.status(401).json({ message: 'Invalid token' });
+      return;
     }
+
+    req.userId = decoded.userId;
+    next();
   } catch (error) {
-    res.status(401).json({ message: 'Invalid token' });
+    console.error('Token verification error:', error);
+    res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
 

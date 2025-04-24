@@ -49,8 +49,6 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
       secure: true,
       sameSite: 'none',
       maxAge: 86400000, // 1 day in milliseconds
-      path: '/',
-      domain: process.env.NODE_ENV === 'production' ? 'vercel.app' : undefined,
     });
 
     // Remove password from user object before sending

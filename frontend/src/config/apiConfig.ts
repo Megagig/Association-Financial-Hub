@@ -1,7 +1,19 @@
 // Modified apiConfig.ts - Ensuring consistency in endpoints
 
+// export const API_BASE_URL =
+//   import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+  import.meta.env.MODE === 'production'
+    ? 'https://savio-96-alumni.vercel.app'
+    : 'http://localhost:3000';
+
+export const API_CONFIG = {
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+};
 
 // Request timeout in milliseconds (15 seconds)
 export const API_TIMEOUT = 15000;
