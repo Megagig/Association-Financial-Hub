@@ -63,7 +63,7 @@
 
 ## 🚀 Live Demo <a name="live-demo"></a>
 
-- [Live Demo Link](coming soon)
+- [Live Demo Link](https://association-financial-hub.vercel.app)
 
 - [Walkthrough Video ](coming soon)
 
